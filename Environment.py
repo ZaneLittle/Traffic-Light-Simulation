@@ -17,7 +17,6 @@ class Environment:
         # [3] = south-east
         self.lights = [TrafficLight(), TrafficLight(),
                        TrafficLight(), TrafficLight()]
-
         self.lights[0].eastNeighbor = self.lights[1]
         self.lights[0].southNeighbor = self.lights[2]
 

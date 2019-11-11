@@ -47,3 +47,16 @@ class TrafficLight:
                     else:  # w
                         self.westNeighbour.push(queue.pop(), time)
         self.updateCost(time)
+
+    def addNeighbour(self, direction, light):
+        """
+            Takes in a direction (n,e,s,w) and a traffic light and adds it to be an adjacent
+            traffic light.
+        """
+        dirs = {
+            "n": self.northNeighbour,
+            "e": self.eastNeighbour,
+            "s": self.southNeighbour,
+            "w": self.westNeighbour
+        }
+        dirs[direction] = light
