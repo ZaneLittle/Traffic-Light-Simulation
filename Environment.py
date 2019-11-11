@@ -17,17 +17,17 @@ class Environment:
         # [3] = south-east
         self.lights = [TrafficLight(), TrafficLight(),
                        TrafficLight(), TrafficLight()]
-        self.lights[0].eastNeighbor = self.lights[1]
-        self.lights[0].southNeighbor = self.lights[2]
+        self.lights[0].addNeighbour('e',self.lights[1])
+        self.lights[0].addNeighbour('s',self.lights[2])
 
-        self.lights[1].westNeighbor = self.lights[0]
-        self.lights[1].southNeighbor = self.lights[3]
+        self.lights[1].addNeighbour('w',self.lights[0])
+        self.lights[1].addNeighbour('s',self.lights[3])
 
-        self.lights[2].northNeighbor = self.lights[0]
-        self.lights[2].eastNeighbor = self.lights[3]
+        self.lights[2].addNeighbour('n',self.lights[0])
+        self.lights[2].addNeighbour('e',self.lights[3])
 
-        self.lights[3].northNeighbor = self.lights[1]
-        self.lights[3].westNeighbor = self.lights[2]
+        self.lights[3].addNeighbour('n',self.lights[1])
+        self.lights[3].addNeighbour('w',self.lights[2])
 
         self.cars = []
         self.cost = sum([light.cost for light in self.lights])
