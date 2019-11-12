@@ -1,3 +1,4 @@
+import math
 from LightQueue import LightQueue
 from Car import Car
 
@@ -17,15 +18,20 @@ class TrafficLight:
         self.eastNeighbour = None
         self.southNeighbour = None
         self.westNeighbour = None
-        self.cost = 0
 
-    def updateCost(self, time):
+    def updateDirection(self, time):
+        self.direction = math.sin(time) > 0;
+
+    def numCars(self):
+        return len(self.qN.cars)+len(self.qE.cars)+len(self.qS.cars)+len(self.qW.cars)
+
+    def getCost(self, time):
         ''' return sum of cost of queues at this light '''
-        self.cost = self.qN.cost(time) + self.qE.cost(time) + \
-            self.qS.cost(time) + self.qW.cost(time)
+        return self.qN.getCost(time) + self.qE.getCost(time) + self.qS.getCost(time) + self.qW.getCost(time)
 
     def updateQueues(self, time):
         ''' Move cars in direction the light is set '''
+        self.updateDirection(time)
         queues = []
         if self.direction:
             queues = [self.qN, self.qS]
@@ -33,20 +39,25 @@ class TrafficLight:
             queues = [self.qE,  self.qW]
 
         for queue in queues:
+            # print(len(queue.cars))
             for car in queue.cars:
                 if not car.route:
                     queue.pop()
                 else:
-                    nextCarAction = car.route.pop()
-                    if nextCarAction == "n":
-                        self.northNeighbour.push(queue.pop(), time)
-                    elif nextCarAction == "e":
-                        self.eastNeighbour.push(queue.pop(), time)
-                    elif nextCarAction == "s":
-                        self.southNeighbour.push(queue.pop(), time)
-                    else:  # w
-                        self.westNeighbour.push(queue.pop(), time)
-        self.updateCost(time)
+                    dirs = {
+                        "n": self.northNeighbour,
+                        "e": self.eastNeighbour,
+                        "s": self.southNeighbour,
+                        "w": self.westNeighbour
+                    }
+                    nextCarAction = car.route.pop(0)
+                    poppedCar = queue.popCar()
+                    if dirs[nextCarAction] is None:
+                        # If a car is at the north most intersection and want's to continue north,
+                        # it exits the city
+                        del poppedCar
+                    else:
+                        dirs[nextCarAction].pushCar(poppedCar,time)
 
     def addNeighbour(self, direction, light):
         """

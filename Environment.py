@@ -29,34 +29,30 @@ class Environment:
         self.lights[3].addNeighbour('n', self.lights[1])
         self.lights[3].addNeighbour('w', self.lights[2])
 
-        self.cars = []
-        self.cost = sum([light.cost for light in self.lights])
-
-        self.possibleRoutes = [[(0, "qN"), "n", "w", "n"]]
-
-    def removeCompleteCars(self):
-        self.cars = [c for c in self.cars if c.route]
+        self.possibleRoutes = [[(0, "qS"), "s", "e"]]
 
     def addCarToQueue(self, car, time):
-        position = car.route[0]
-        if self.lights[position[0]].qN is not None:
-            self.lights[position[0]].qN.push(car, time)
-
+        position = car.route.pop(0)
+        lightIndex = position[0]
+        light = self.lights[lightIndex]
+        queueId = position[1]
+        queue = getattr(light, queueId)
+        queue.pushCar(car, time)
+       
     def update(self, time):
         # Add car
-        route = random.choice(self.possibleRoutes)
-        self.addCarToQueue(Car(route, start_time=time), time)
-        # TODO: initialize car in a queue based on start position
-        # Check if cars should be removed
+        route =random.choice(self.possibleRoutes)[:]
+        newCar = Car(route, start_time=time)
+        self.addCarToQueue(newCar, time)
         for light in self.lights:
             light.updateQueues(time)
 
-        self.removeCompleteCars()
-        self.updateCost(time)
 
-    def updateCost(self, time):
-        print([light.cost for light in self.lights])
-        self.cost = sum([light.cost for light in self.lights])
+    def getCost(self, time):
+        return sum([light.getCost(time) for light in self.lights])
+
+    def getNumCars(self):
+        return sum([light.numCars() for light in self.lights])
 
     def generateRoutes(self):
         """
@@ -123,15 +119,15 @@ class Environment:
 
             return []
 
-        # Shortest point from point a to point b can be found with BFS
-        for start in set(graph.keys()):
-            if type(start) is int:
-                # Exclude start point and iterate through every possible end point
-                new_graph = {k: graph[k] for k in set(
-                    list(graph.keys())) - set([start])}
-                for end in set(new_graph.keys()):
-                    if type(end) is int:
-                        route = BFS(graph, start, end)
-                        all_routes.append(route)
+        # # Shortest point from point a to point b can be found with BFS
+        # for start in set(graph.keys()):
+        #     if type(start) is int:
+        #         # Exclude start point and iterate through every possible end point
+        #         new_graph = {k: graph[k] for k in set(
+        #             list(graph.keys())) - set([start])}
+        #         for end in set(new_graph.keys()):
+        #             if type(end) is int:
+        #                 route = BFS(graph, start, end)
+        #                 all_routes.append(route)
 
-        return all_routes
+        # return all_routes
