@@ -7,7 +7,7 @@ routes = environment.generateRoutes()
 # print(routes)
 
 for time in range(10):
-    print("NUM CARS: {}".format(environment.getNumCars()))
+    print("Env num cars: {}".format(environment.getNumCars()))
 
     environment.update(time)
-    print(environment.getCost(time))
+    # print(environment.getCost(time))

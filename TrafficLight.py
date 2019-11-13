@@ -18,6 +18,12 @@ class TrafficLight:
         self.eastNeighbour = None
         self.southNeighbour = None
         self.westNeighbour = None
+        self.dirs = {
+            "n": self.northNeighbour,
+            "e": self.eastNeighbour,
+            "s": self.southNeighbour,
+            "w": self.westNeighbour
+        }
 
     def updateDirection(self, time):
         self.direction = math.sin(time) > 0
@@ -41,34 +47,22 @@ class TrafficLight:
         for queue in queues:
             # print(len(queue.cars))
             for car in queue.cars:
-                if not car.route:
-                    queue.pop()
+                nextCarAction = car.route.pop(0)
+                poppedCar = queue.popCar()
+                if self.dirs[nextCarAction] is None:
+                    # If a car is at the north most intersection and want's to continue north,
+                    # it exits the city
+                    initLength = len(self.cars)
+                    del poppedCar
+                    assert(len(self.cars) - initLength == 1)
+                    print("GETTING RID OF CAR")
                 else:
-                    dirs = {
-                        "n": self.northNeighbour,
-                        "e": self.eastNeighbour,
-                        "s": self.southNeighbour,
-                        "w": self.westNeighbour
-                    }
-                    nextCarAction = car.route.pop(0)
-                    poppedCar = queue.popCar()
-                    if dirs[nextCarAction] is None:
-                        # If a car is at the north most intersection and want's to continue north,
-                        # it exits the city
-                        del poppedCar
-                    else:
-                        dirs[nextCarAction].pushCar(poppedCar, time)
-        self.updateCost(time)
+
+                    self.dirs[nextCarAction].pushCar(poppedCar, time)
 
     def addNeighbour(self, direction, light):
         """
             Takes in a direction (n,e,s,w) and a traffic light and adds it to be an adjacent
             traffic light.
         """
-        dirs = {
-            "n": self.northNeighbour,
-            "e": self.eastNeighbour,
-            "s": self.southNeighbour,
-            "w": self.westNeighbour
-        }
-        dirs[direction] = light
+        self.dirs[direction] = light

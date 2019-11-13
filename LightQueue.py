@@ -10,14 +10,15 @@ class LightQueue:
         self.cars = cars
         for i in range(len(self.cars)):
             self.cars[i].start_time = time
-    
 
     def pushCar(self, car, time):
         ''' 
         Add a single car to the end of the queue and sets its start time
         '''
+        initLength = len(self.cars)
         car.start_time = time
         self.cars.append(car)
+        assert(len(self.cars) == initLength + 1)
 
     def popCar(self):
         ''' 

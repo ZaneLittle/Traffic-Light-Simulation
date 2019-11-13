@@ -38,6 +38,7 @@ class Environment:
         queueId = position[1]
         queue = getattr(light, queueId)
         queue.pushCar(car, time)
+        print("Light num cars: {}".format(light.numCars()))
 
     def update(self, time):
         # Add car
@@ -51,6 +52,9 @@ class Environment:
         return sum([light.getCost(time) for light in self.lights])
 
     def getNumCars(self):
+        """
+            Returns the total number of cars in the system.
+        """
         return sum([light.numCars() for light in self.lights])
 
     def generateRoutes(self):
