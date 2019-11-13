@@ -38,15 +38,14 @@ class Environment:
         queueId = position[1]
         queue = getattr(light, queueId)
         queue.pushCar(car, time)
-       
+
     def update(self, time):
         # Add car
-        route =random.choice(self.possibleRoutes)[:]
+        route = random.choice(self.possibleRoutes)[:]
         newCar = Car(route, start_time=time)
         self.addCarToQueue(newCar, time)
         for light in self.lights:
             light.updateQueues(time)
-
 
     def getCost(self, time):
         return sum([light.getCost(time) for light in self.lights])

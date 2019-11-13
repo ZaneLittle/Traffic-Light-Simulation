@@ -20,7 +20,7 @@ class TrafficLight:
         self.westNeighbour = None
 
     def updateDirection(self, time):
-        self.direction = math.sin(time) > 0;
+        self.direction = math.sin(time) > 0
 
     def numCars(self):
         return len(self.qN.cars)+len(self.qE.cars)+len(self.qS.cars)+len(self.qW.cars)
@@ -57,7 +57,8 @@ class TrafficLight:
                         # it exits the city
                         del poppedCar
                     else:
-                        dirs[nextCarAction].pushCar(poppedCar,time)
+                        dirs[nextCarAction].pushCar(poppedCar, time)
+        self.updateCost(time)
 
     def addNeighbour(self, direction, light):
         """
