@@ -9,7 +9,7 @@ class TrafficLight:
     '''
 
     def __init__(self):
-        self.direction = False
+        self.directionIsNorthSouth = False
         self.queues = [LightQueue(), LightQueue(), LightQueue(), LightQueue()]
         self.neighbours = [None, None, None, None]
         self.dirs = {
@@ -20,14 +20,26 @@ class TrafficLight:
         }
 
     def updateDirection(self, time):
-        self.direction = math.sin(time) > 0
+        self.directionIsNorthSouth = math.sin(time) > 0
 
     def getNumCars(self):
         return sum([queue.getNumCars() for queue in self.queues])
 
-    def getCost(self, time):
-        ''' return sum of cost of queues at this light '''
-        return sum([queue.cost for queue in self.queues])
+    def getWaitTime(self, time):
+        def _bin(wait_time):
+            # Bin total_wait_time
+            if wait_time > 30:
+                return  9
+            elif wait_time > 20:
+                return  4
+            else:
+                return 1
+        ''' return wait times of queues at this light '''
+        northSouth = self.queues[0].getWaitTime(
+            time)+self.queues[2].getWaitTime(time)
+        eastWest = self.queues[1].getWaitTime(
+            time)+self.queues[3].getWaitTime(time)
+        return _bin(northSouth), _bin(eastWest)
 
     def pushCar(self, car, action, time):
         """
@@ -49,20 +61,16 @@ class TrafficLight:
         initLength = queue.getNumCars()
         initLightLength = self.getNumCars()
 
-        # print([queue.getNumCars() for queue in self.queues], action)
-
         queue.pushCar(car, time)
-        # print([queue.getNumCars() for queue in self.queues])
 
         assert(queue.getNumCars() - initLength == 1)
-        # WHY DOES BELOW FAIL???? helpppppp
         assert(self.getNumCars() - initLightLength == 1)
 
     def updateQueues(self, time):
         ''' Move cars in direction the light is set '''
         self.updateDirection(time)
         queues = []
-        if self.direction:
+        if self.directionIsNorthSouth:
             queues = [self.queues[0], self.queues[2]]
         else:
             queues = [self.queues[1], self.queues[3]]

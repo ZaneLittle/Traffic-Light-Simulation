@@ -32,5 +32,5 @@ class LightQueue:
     def getNumCars(self):
         return len(self.cars)
 
-    def getCost(self, time):
+    def getWaitTime(self, time):
         return sum([time - car.start_time for car in self.cars])
