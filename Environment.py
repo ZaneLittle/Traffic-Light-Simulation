@@ -29,16 +29,19 @@ class Environment:
         self.lights[3].addNeighbour('n', self.lights[1])
         self.lights[3].addNeighbour('w', self.lights[2])
 
-        self.possibleRoutes = [[(0, "qS"), "s", "e"]]
+        self.possibleRoutes = [[(0, 2), "s", "e"]]
 
     def addCarToQueue(self, car, time):
         position = car.route.pop(0)
         lightIndex = position[0]
         light = self.lights[lightIndex]
-        queueId = position[1]
-        queue = getattr(light, queueId)
+        queueIdx = position[1]
+        queue = light.queues[queueIdx]
+
+        initNumCars = light.getNumCars()
         queue.pushCar(car, time)
-        print("Light num cars: {}".format(light.numCars()))
+        numCars = light.getNumCars()
+        assert(numCars - initNumCars == 1)  # actually equals 4
 
     def update(self, time):
         # Add car
@@ -55,7 +58,7 @@ class Environment:
         """
             Returns the total number of cars in the system.
         """
-        return sum([light.numCars() for light in self.lights])
+        return sum([light.getNumCars() for light in self.lights])
 
     def generateRoutes(self):
         """
@@ -121,6 +124,17 @@ class Environment:
                     explored.append(node)
 
             return []
+
+        def mapEnvironmentToState(self):
+            """
+                returns the state based on the environment
+                [
+                    (light1Direction,f(timeCarsGoingNorth/South),f(timeCarsGoingEast/West))
+                    (light2Direction,f(timeCarsGoingNorth/South),f(timeCarsGoingEast/West))
+                    ...
+                ]
+            """
+            pass
 
         # # Shortest point from point a to point b can be found with BFS
         # for start in set(graph.keys()):

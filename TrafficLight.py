@@ -9,60 +9,92 @@ class TrafficLight:
     '''
 
     def __init__(self):
-        self.direction = True
-        self.qN = LightQueue()
-        self.qE = LightQueue()
-        self.qS = LightQueue()
-        self.qW = LightQueue()
-        self.northNeighbour = None
-        self.eastNeighbour = None
-        self.southNeighbour = None
-        self.westNeighbour = None
+        self.direction = False
+        self.queues = [LightQueue(), LightQueue(), LightQueue(), LightQueue()]
+        self.neighbours = [None, None, None, None]
         self.dirs = {
-            "n": self.northNeighbour,
-            "e": self.eastNeighbour,
-            "s": self.southNeighbour,
-            "w": self.westNeighbour
+            "n": 0,
+            "e": 1,
+            "s": 2,
+            "w": 3
         }
 
     def updateDirection(self, time):
         self.direction = math.sin(time) > 0
 
-    def numCars(self):
-        return len(self.qN.cars)+len(self.qE.cars)+len(self.qS.cars)+len(self.qW.cars)
+    def getNumCars(self):
+        return sum([queue.getNumCars() for queue in self.queues])
 
     def getCost(self, time):
         ''' return sum of cost of queues at this light '''
-        return self.qN.getCost(time) + self.qE.getCost(time) + self.qS.getCost(time) + self.qW.getCost(time)
+        return sum([queue.cost for queue in self.queues])
+
+    def pushCar(self, car, action, time):
+        """
+            Takes in car to be pushed to an adjacent traffic lights queue
+            action == "n" => push car to north neighbours south queue
+            action == "s" => push car to south neighbours north queue
+            ... etc.
+        """
+        queue = None
+        if action == "n":
+            queue = self.queues[2]  # add car to south queue
+        elif action == "e":
+            queue = self.queues[3]
+        elif action == "s":
+            queue = self.queues[0]
+        else:  # w
+            queue = self.queues[1]
+
+        initLength = queue.getNumCars()
+        initLightLength = self.getNumCars()
+
+        # print([queue.getNumCars() for queue in self.queues], action)
+
+        queue.pushCar(car, time)
+        # print([queue.getNumCars() for queue in self.queues])
+
+        assert(queue.getNumCars() - initLength == 1)
+        # WHY DOES BELOW FAIL???? helpppppp
+        assert(self.getNumCars() - initLightLength == 1)
 
     def updateQueues(self, time):
         ''' Move cars in direction the light is set '''
         self.updateDirection(time)
         queues = []
         if self.direction:
-            queues = [self.qN, self.qS]
+            queues = [self.queues[0], self.queues[2]]
         else:
-            queues = [self.qE,  self.qW]
+            queues = [self.queues[1], self.queues[3]]
 
         for queue in queues:
-            # print(len(queue.cars))
             for car in queue.cars:
+                initQueueLength = queue.getNumCars()
+                queue.popCar()
+                assert(initQueueLength - queue.getNumCars() == 1)
+                if not car.route:
+                    del car
+                    break
                 nextCarAction = car.route.pop(0)
-                poppedCar = queue.popCar()
                 if self.dirs[nextCarAction] is None:
                     # If a car is at the north most intersection and want's to continue north,
                     # it exits the city
                     initLength = len(self.cars)
-                    del poppedCar
+                    del car
                     assert(len(self.cars) - initLength == 1)
-                    print("GETTING RID OF CAR")
                 else:
+                    lightIndex = self.dirs[nextCarAction]
+                    lightToPush = self.neighbours[lightIndex]
+                    initLength = lightToPush.getNumCars()
 
-                    self.dirs[nextCarAction].pushCar(poppedCar, time)
+                    lightToPush.pushCar(car, nextCarAction, time)
+                    assert(lightToPush.getNumCars() -
+                           initLength == 1)  # actually equals 4
 
     def addNeighbour(self, direction, light):
         """
             Takes in a direction (n,e,s,w) and a traffic light and adds it to be an adjacent
             traffic light.
         """
-        self.dirs[direction] = light
+        lightToChange = self.dirs[direction]
+        self.neighbours[lightToChange] = light
