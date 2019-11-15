@@ -5,7 +5,8 @@ class Agent:
     def __init__(self):
         ''' 
         init as equiprobable
-        the policy for each light is represented as an index of the policy array 
+        the policy for each light is represented as an index of the policy array
+        p[a|s]
         '''
         self.policy = [0.5, 0.5, 0.5, 0.5]
 

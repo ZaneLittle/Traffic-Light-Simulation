@@ -43,11 +43,20 @@ class Environment:
         numCars = light.getNumCars()
         assert(numCars - initNumCars == 1)
 
+    # def update(self, time):
+    #     # Add car
+    #     route = random.choice(self.possibleRoutes)[:]
+    #     newCar = Car(route, start_time=time)
+    #     self.addCarToQueue(newCar, time)
+    #     for light in self.lights:
+    #         light.updateQueues(time)
+
     def update(self, time):
         # Add car
-        route = random.choice(self.possibleRoutes)[:]
-        newCar = Car(route, start_time=time)
-        self.addCarToQueue(newCar, time)
+        if time == 0:
+            route = [(0, 2), "s", "e"]
+            newCar = Car(route, start_time=time)
+            self.addCarToQueue(newCar, time)
         for light in self.lights:
             light.updateQueues(time)
 
