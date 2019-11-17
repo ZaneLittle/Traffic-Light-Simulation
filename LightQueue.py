@@ -6,7 +6,8 @@ class LightQueue:
     Represents the queue at each direction of a light
     '''
 
-    def __init__(self, cars=[], time=0):
+    def __init__(self, id, cars=[], time=0):
+        self.id = id
         self.cars = cars[:]
         for i in range(len(self.cars)):
             self.cars[i].start_time = time
@@ -19,6 +20,9 @@ class LightQueue:
         car.start_time = time
         self.cars.append(car)
         assert(len(self.cars) - initLength == 1)
+
+    def peakCar(self):
+        return self.cars[0]
 
     def popCar(self):
         ''' 
