@@ -15,21 +15,33 @@ class Environment:
         # [1] = north-east
         # [2] = south-west
         # [3] = south-east
-        self.lights = [TrafficLight(), TrafficLight(),
-                       TrafficLight(), TrafficLight()]
+        self.lights = [TrafficLight("NW"), TrafficLight("NE"),
+                       TrafficLight("SE"), TrafficLight("SW")]
+
+        print(self.lights[0].neighbours)
         self.lights[0].addNeighbour('e', self.lights[1])
-        self.lights[0].addNeighbour('s', self.lights[2])
+        self.lights[0].addNeighbour('s', self.lights[3])
+        print(list(self.lights[0].neighbours))
 
         self.lights[1].addNeighbour('w', self.lights[0])
-        self.lights[1].addNeighbour('s', self.lights[3])
+        self.lights[1].addNeighbour('s', self.lights[2])
 
-        self.lights[2].addNeighbour('n', self.lights[0])
-        self.lights[2].addNeighbour('e', self.lights[3])
+        self.lights[2].addNeighbour('n', self.lights[1])
+        self.lights[2].addNeighbour('w', self.lights[3])
 
-        self.lights[3].addNeighbour('n', self.lights[1])
-        self.lights[3].addNeighbour('w', self.lights[2])
+        self.lights[3].addNeighbour('n', self.lights[0])
+        self.lights[3].addNeighbour('e', self.lights[2])
 
-        self.possibleRoutes = [[(0, 2), "s", "e"]]
+    def __str__(self):
+        i = 0
+        output = ""
+        for light in self.lights:
+            directionIndexMap = [['n', 'e', 's', 'w'][j] for j in range(4)]
+            queueLengths = [queue.getNumCars() for queue in light.queues]
+            output += "\n{} traffic light, queue sizes: {}".format(["NW", "NE", "SE", "SW"][i], list(zip(
+                directionIndexMap, queueLengths)))
+            i += 1
+        return output
 
     def addCarToQueue(self, car, time):
         position = car.route.pop(0)
@@ -43,19 +55,11 @@ class Environment:
         numCars = light.getNumCars()
         assert(numCars - initNumCars == 1)
 
-    # def update(self, time):
-    #     # Add car
-    #     route = random.choice(self.possibleRoutes)[:]
-    #     newCar = Car(route, start_time=time)
-    #     self.addCarToQueue(newCar, time)
-    #     for light in self.lights:
-    #         light.updateQueues(time)
-
     def update(self, time):
         # Add car
         # For now only add one car so we can see if the environment is working properly
         if time == 0:
-            route = [(0, 2), "s", "e"]
+            route = [(0, 2), "s", "s"]
             newCar = Car(route, start_time=time)
             self.addCarToQueue(newCar, time)
         for light in self.lights:
