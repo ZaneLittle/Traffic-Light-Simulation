@@ -1,6 +1,8 @@
 from Environment import Environment
+from Agent import Agent
 
 environment = Environment(0)
+agent = Agent(environment)
 
 # Testing route generation
 routes = environment.generateRoutes()
@@ -8,6 +10,7 @@ routes = environment.generateRoutes()
 
 for time in range(10):
     print("Time step: {}".format(time))
+    print("NS dir for traffic lights? {}".format(list(zip([['n','e','s','w'][j] for j in range(4)],[light.directionIsNorthSouth for light in environment.lights]))))
     # print("Env num cars: sum({}) = {}"
     #       .format([light.getNumCars() for light in environment.lights],
     #               environment.getNumCars()))
@@ -19,3 +22,5 @@ for time in range(10):
     # print("Total wait time: {}".format(environment.getWaitTime(time)))
 
     environment.update(time)
+    agent.update(time)
+

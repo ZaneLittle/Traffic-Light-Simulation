@@ -19,9 +19,6 @@ class TrafficLight:
             "w": 3
         }
 
-    def updateDirection(self, time):
-        self.directionIsNorthSouth = math.sin(time) > 0
-
     def getNumCars(self):
         return sum([queue.getNumCars() for queue in self.queues])
 
@@ -68,7 +65,6 @@ class TrafficLight:
 
     def updateQueues(self, time):
         ''' Move cars in direction the light is set '''
-        self.updateDirection(time)
         queues = []
         if self.directionIsNorthSouth:
             queues = [self.queues[0], self.queues[2]]

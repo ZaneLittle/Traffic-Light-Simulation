@@ -53,6 +53,7 @@ class Environment:
 
     def update(self, time):
         # Add car
+        # For now only add one car so we can see if the environment is working properly
         if time == 0:
             route = [(0, 2), "s", "e"]
             newCar = Car(route, start_time=time)
