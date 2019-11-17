@@ -41,81 +41,19 @@ class TrafficLight:
             time)+self.queues[3].getWaitTime(time)
         return _bin(northSouth), _bin(eastWest)
 
-    # def pushCar(self, car, action, time):
-    #     """
-    #         Takes in car to be pushed to an adjacent traffic lights queue
-    #         action == "n" => push car to north neighbours south queue
-    #         action == "s" => push car to south neighbours north queue
-    #         ... etc.
-    #     """
-    #     queue = None
-    #     if action == "n":
-    #         queue = self.queues[2]  # add car to south queue
-    #     elif action == "e":
-    #         queue = self.queues[3]
-    #     elif action == "s":
-    #         queue = self.queues[0]
-    #     else:  # w
-    #         queue = self.queues[1]
-
-    #     initLength = queue.getNumCars()
-    #     initLightLength = self.getNumCars()
-
-    #     queue.pushCar(car, time)
-
-    #     assert(queue.getNumCars() - initLength == 1)
-    #     assert(self.getNumCars() - initLightLength == 1)
-
-    def pushCar(self, car, action, time):
+    def pushCarToNextLight(self, car, action, time):
         """
             Takes in car to be pushed to an adjacent traffic lights queue
             action == "n" => push car to north neighbour's north facing queue
             action == "s" => push car to south neighbour's south facing queue
             ... etc.
         """
-
         direction = self.dirs[action]
-        print([str(n) for n in self.neighbours], direction)
         assert self.neighbours[direction], "neighbor does not exist"
-        # self.neighbours[direction].queues[direction].pushCar(car, time)
         queue = self.neighbours[direction].queues[direction]
         initLength = queue.getNumCars()
         queue.pushCar(car, time)
-        print(self.neighbours[direction].queues[direction], queue)
-        print([str(n) for n in self.neighbours], direction)
         assert(queue.getNumCars() - initLength == 1)
-
-    # def updateQueues(self, time):
-    #     ''' Move cars in direction the light is set '''
-    #     queues = []
-    #     if self.directionIsNorthSouth:
-    #         queues = [self.queues[0], self.queues[2]]
-    #     else:
-    #         queues = [self.queues[1], self.queues[3]]
-
-    #     for queue in queues:
-    #         for car in queue.cars:
-    #             initQueueLength = queue.getNumCars()
-    #             queue.popCar()
-    #             assert(initQueueLength - queue.getNumCars() == 1)
-    #             if not car.route:
-    #                 del car
-    #                 break
-    #             nextCarAction = car.route.pop(0)
-    #             if self.dirs[nextCarAction] is None:
-    #                 # If a car is at the north most intersection and want's to continue north,
-    #                 # it exits the city
-    #                 initLength = len(self.cars)
-    #                 del car
-    #                 assert(len(self.cars) - initLength == 1)
-    #             else:
-    #                 lightIndex = self.dirs[nextCarAction]
-    #                 lightToPush = self.neighbours[lightIndex]
-    #                 initLength = lightToPush.getNumCars()
-
-    #                 lightToPush.pushCar(car, nextCarAction, time)
-    #                 assert(lightToPush.getNumCars() -
-    #                        initLength == 1)  # actually equals 4
 
     def updateQueues(self, time):
         ''' Move cars in direction the light is set '''
@@ -126,22 +64,29 @@ class TrafficLight:
             queues = [self.queues[1], self.queues[3]]
 
         for queue in queues:
-            while queue.getNumCars():
+            if queue.getNumCars():
                 initQueueLength = queue.getNumCars()
-                car = queue.popCar()  # for car in queue.cars
-                assert(initQueueLength - queue.getNumCars() == 1)
+                car = queue.peakCar()
                 assert(car.route)
                 nextCarAction = car.route.pop(0)
+                direction = self.dirs[nextCarAction]
                 assert(nextCarAction)
-                if self.neighbours[self.dirs[nextCarAction]] is None:
+                if self.neighbours[direction] is None:
                     # If a car is at the north most intersection and wants to continue north,
                     # it exits the city
                     del car
                 else:
-                    lightIndex = self.dirs[nextCarAction]
-                    lightToPush = self.neighbours[lightIndex]
-                    initLength = lightToPush.getNumCars()
-                    self.pushCar(car, nextCarAction, time)
+                    if not car.delay:
+                        car = queue.popCar()
+                        car.delay = car.MAX_DELAY
+                        lightToPush = self.neighbours[direction]
+                        print("Pushing car from {} to {}".format(
+                            self.id, lightToPush))
+                        self.pushCarToNextLight(car, nextCarAction, time)
+                        print(lightToPush)
+                    else:
+                        print("Delay: {} -> {}".format(car.delay, car.delay-1))
+                        car.delay -= 1
 
     def addNeighbour(self, direction, light):
         """

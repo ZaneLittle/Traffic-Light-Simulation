@@ -21,6 +21,9 @@ class LightQueue:
         self.cars.append(car)
         assert(len(self.cars) - initLength == 1)
 
+    def peakCar(self):
+        return self.cars[0]
+
     def popCar(self):
         ''' 
         Pop a single car off the beginning of the queue and return it 

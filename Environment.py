@@ -18,10 +18,8 @@ class Environment:
         self.lights = [TrafficLight("NW"), TrafficLight("NE"),
                        TrafficLight("SE"), TrafficLight("SW")]
 
-        print(self.lights[0].neighbours)
         self.lights[0].addNeighbour('e', self.lights[1])
         self.lights[0].addNeighbour('s', self.lights[3])
-        print(list(self.lights[0].neighbours))
 
         self.lights[1].addNeighbour('w', self.lights[0])
         self.lights[1].addNeighbour('s', self.lights[2])
