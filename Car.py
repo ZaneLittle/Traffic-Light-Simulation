@@ -1,3 +1,4 @@
+
 class Car:
     '''
     Defines each car in the environment
@@ -6,9 +7,10 @@ class Car:
         route is represented as follows: ['n', 's', 'e', 'w']
     '''
 
-    def __init__(self, route, start_time=None):
+    def __init__(self, route, start_time=None, MAX_DELAY=2):
         #self.startLocation = route.pop(0)
-        self.MAX_DELAY = 2
+        self.position = route[0]
+        self.MAX_DELAY = MAX_DELAY
         self.route = route
         self.start_time = start_time
         self.delay = 0

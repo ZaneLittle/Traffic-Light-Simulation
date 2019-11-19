@@ -9,8 +9,11 @@ class LightQueue:
     def __init__(self, id, cars=[], time=0):
         self.id = id
         self.cars = cars[:]
-        for i in range(len(self.cars)):
-            self.cars[i].start_time = time
+        for car in self.cars:
+            car.start_time = time
+
+    def __str__(self):
+        return "< Light Queue {}> ".format(self.id)
 
     def pushCar(self, car, time):
         ''' 
@@ -36,5 +39,5 @@ class LightQueue:
     def getNumCars(self):
         return len(self.cars)
 
-    def getWaitTime(self, time):
-        return sum([time - car.start_time for car in self.cars])
+    def getWaitTimes(self, time):
+        return [time - car.start_time for car in self.cars]

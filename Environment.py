@@ -9,7 +9,7 @@ class Environment:
         Represents our environment with 4 traffic lights
     '''
 
-    def __init__(self, time):
+    def __init__(self, time, MAX_CARS=100):
 
         # [0] = north-west
         # [1] = north-east
@@ -30,16 +30,7 @@ class Environment:
         self.lights[3].addNeighbour('n', self.lights[0])
         self.lights[3].addNeighbour('e', self.lights[2])
 
-    def __str__(self):
-        i = 0
-        output = ""
-        for light in self.lights:
-            directionIndexMap = [['n', 'e', 's', 'w'][j] for j in range(4)]
-            queueLengths = [queue.getNumCars() for queue in light.queues]
-            output += "\n{} traffic light, queue sizes: {}".format(["NW", "NE", "SE", "SW"][i], list(zip(
-                directionIndexMap, queueLengths)))
-            i += 1
-        return output
+        self.MAX_CARS = MAX_CARS
 
     def addCarToQueue(self, car, time):
         position = car.route.pop(0)
@@ -51,20 +42,37 @@ class Environment:
         initNumCars = light.getNumCars()
         queue.pushCar(car, time)
         numCars = light.getNumCars()
-        assert(numCars - initNumCars == 1)
+
+    def addAllCars(self, time):
+        """
+            Probabilistically determines how many cars should be added at a given
+            time step
+        """
+        if self.getNumCars >= self.MAX_CARS:
+            return
 
     def update(self, time):
         # Add car
         # For now only add one car so we can see if the environment is working properly
+        newCar1 = Car([(0, 2), "s", "s"], start_time=time)
+        newCar2 = Car([(3, 0), "n", "e", "e"], start_time=time)
+        newCar3 = Car([(1, 1), "w", "s", "s"], start_time=time)
+        newCar4 = Car([(2, 0), "n", "e", "s", "s"], start_time=time)
         if time == 0:
-            route = [(0, 2), "s", "s"]
-            newCar = Car(route, start_time=time)
-            self.addCarToQueue(newCar, time)
+            self.addCarToQueue(newCar1, time)
+            self.addCarToQueue(newCar2, time)
+            self.addCarToQueue(newCar3, time)
+            self.addCarToQueue(newCar4, time)
+        if time == 5:
+            self.addCarToQueue(newCar1, time)
+            self.addCarToQueue(newCar2, time)
+            self.addCarToQueue(newCar3, time)
+            self.addCarToQueue(newCar4, time)
         for light in self.lights:
             light.updateQueues(time)
 
-    def getWaitTime(self, time):
-        return sum([light.getWaitTime(time)[0]+light.getWaitTime(time)[1] for light in self.lights])
+    # def getWaitTime(self, time):
+    #     return sum([light.getWaitTime(time)[0]+light.getWaitTime(time)[1] for light in self.lights])
 
     def getNumCars(self):
         """
@@ -82,9 +90,13 @@ class Environment:
         """
         state = [1 if light.directionIsNorthSouth else 0 for light in self.lights]
         for light in self.lights:
-            NSTotalTime, EWTotalTime = light.getWaitTime(time)
+            NSTotalTime, EWTotalTime = light.getWaitTimes(time)
             state += [NSTotalTime, EWTotalTime]
         return state
+
+        def getCost(self, time):
+            for light in lights:
+                pass
 
     def generateRoutes(self):
         """
@@ -127,39 +139,60 @@ class Environment:
                  7: ["sw_light.qW"],
                  8: ["nw_light.qW"]}
 
-    def BFS(g, start_point, end_point):
-        # Breadth first search for directed graph with no weights
-        explored = []
-        queue = [[start_point]]
+        def BFS(g, start_point, end_point):
+            # Breadth first search for directed graph with no weights
+            explored = []
+            queue = [[start_point]]
 
-        if start_point == end_point:
+            if start_point == end_point:
+                return []
+
+            while queue:
+                path = queue.pop(0)
+                node = path[-1]
+                if node not in explored:
+                    neighbours = g[node]
+                    # Expand to neighbours and check if we have a complete path
+                    for neighbour in neighbours:
+                        new_path = list(path) + [neighbour]
+                        queue.append(new_path)
+                        if neighbour == end_point:
+                            return new_path
+
+                    explored.append(node)
+
             return []
 
-        while queue:
-            path = queue.pop(0)
-            node = path[-1]
-            if node not in explored:
-                neighbours = g[node]
-                # Expand to neighbours and check if we have a complete path
-                for neighbour in neighbours:
-                    new_path = list(path) + [neighbour]
-                    queue.append(new_path)
-                    if neighbour == end_point:
-                        return new_path
+            # # Shortest point from point a to point b can be found with BFS
+            # for start in set(graph.keys()):
+            #     if type(start) is int:
+            #         # Exclude start point and iterate through every possible end point
+            #         new_graph = {k: graph[k] for k in set(
+            #             list(graph.keys())) - set([start])}
+            #         for end in set(new_graph.keys()):
+            #             if type(end) is int:
+            #                 route = BFS(graph, start, end)
+            #                 all_routes.append(route)
 
-                explored.append(node)
+            # return all_routes}
 
-        return []
+    def __str__(self):
+        nw = self.lights[0]
+        ne = self.lights[1]
+        sw = self.lights[2]
+        se = self.lights[3]
+        to_str = "\t   {} \t\t  {}\n".format(
+            nw.queues[2].getNumCars(), ne.queues[2].getNumCars())
+        to_str += "\t {} NW {}\t\t{} NE {}\n".format(nw.queues[1].getNumCars(
+        ), nw.queues[3].getNumCars(), ne.queues[1].getNumCars(), nw.queues[3].getNumCars())
+        to_str += "\t   {}\t\t  {}\n".format(
+            nw.queues[0].getNumCars(), ne.queues[0].getNumCars())
+        to_str += "\n\n"
+        to_str += "\t   {} \t\t  {}\n".format(
+            sw.queues[2].getNumCars(), se.queues[2].getNumCars())
+        to_str += "\t {} SW {}\t\t{} SE {}\n".format(sw.queues[1].getNumCars(
+        ), sw.queues[3].getNumCars(), se.queues[1].getNumCars(), sw.queues[3].getNumCars())
+        to_str += "\t   {} \t\t  {}".format(
+            sw.queues[0].getNumCars(), se.queues[0].getNumCars())
 
-        # # Shortest point from point a to point b can be found with BFS
-        # for start in set(graph.keys()):
-        #     if type(start) is int:
-        #         # Exclude start point and iterate through every possible end point
-        #         new_graph = {k: graph[k] for k in set(
-        #             list(graph.keys())) - set([start])}
-        #         for end in set(new_graph.keys()):
-        #             if type(end) is int:
-        #                 route = BFS(graph, start, end)
-        #                 all_routes.append(route)
-
-        # return all_routes
+        return to_str
