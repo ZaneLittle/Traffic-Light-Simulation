@@ -10,7 +10,7 @@ class LightQueue:
         self.id = id
         self.cars = cars[:]
         for car in self.cars:
-            car.start_time = time
+            car.startTime = time
 
     def __str__(self):
         return "< Light Queue {}> ".format(self.id)
@@ -20,7 +20,7 @@ class LightQueue:
         Add a single car to the end of the queue and sets its start time
         '''
         initLength = len(self.cars)
-        car.start_time = time
+        car.startTime = time
         self.cars.append(car)
         assert(len(self.cars) - initLength == 1)
 
@@ -40,4 +40,8 @@ class LightQueue:
         return len(self.cars)
 
     def getWaitTimes(self, time):
-        return [time - car.start_time for car in self.cars]
+        # The delay attribute in the car class represents how far away it is from 
+        # starting it's "wait" in the queue. This is like saying the car isn't
+        # stationary if it's delay is >0 and we don't count it towards the agent's
+        # cost.
+        return [time - car.startTime for car in self.cars if delay == 0]

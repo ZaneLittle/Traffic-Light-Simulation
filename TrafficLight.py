@@ -32,18 +32,18 @@ class TrafficLight:
         return sum([queue.getNumCars() for queue in self.queues])
 
     def getWaitTimes(self, time):
-        def _bin(wait_time):
-            # Bin total_wait_time
+        def __bin(wait_time):
+            # Bin the total wait time
+            # Update size of Q table if number of bins changes
             if wait_time > 30:
                 return 9
             elif wait_time > 15:
                 return 4
             else:
                 return 1
-
-        NS = _bin(sum(self.queues[0].getWaitTimes(
+        NS = __bin(sum(self.queues[0].getWaitTimes(
             time) + self.queues[2].getWaitTimes(time)))
-        EW = _bin(sum(self.queues[1].getWaitTimes(
+        EW = __bin(sum(self.queues[1].getWaitTimes(
             time) + self.queues[3].getWaitTimes(time)))
         return NS, EW
 
@@ -79,25 +79,31 @@ class TrafficLight:
             queues = [self.queues[1], self.queues[3]]
 
         for queue in queues:
+            for car in queue.cars:
+                car.delay = max(0,car.delay-1)
             if queue.getNumCars():
-                initQueueLength = queue.getNumCars()
                 peakedCar = queue.peakCar()
                 assert(peakedCar.route)
                 nextCarAction = peakedCar.route[0]
                 direction = self.dirs[nextCarAction]
-                if not peakedCar.delay and self.neighbours[direction] is None:
-                    # If a car is at the north most intersection and wants to continue north,
-                    # it exits the city
-                    queue.popCar()
-                    del peakedCar
-                elif not peakedCar.delay:
-                    car = queue.popCar()
-                    car.route.pop(0)
-                    car.delay = car.MAX_DELAY
-                    lightToPush = self.neighbours[direction]
-                    self.pushCarToNextLight(car, nextCarAction, time)
+                if peakedCar.delay > 0:
+                    peakedCar.delay = max(0,peakedCar.delay-1)
                 else:
-                    peakedCar.delay -= 1
+                    if peakedCar.canClear and self.neighbours[direction] is None:
+                        # If a car is at the north most intersection and wants to continue north,
+                        # it exits the city
+                        queue.popCar()
+                        del peakedCar
+                    elif not peakedCar.canClear: 
+                        # add a delay so that the car doesn't immediately pass through the intersection
+                        peakedCar.canClear = not peakedCar.canClear
+                    else:
+                        car = queue.popCar()
+                        car.route.pop(0)
+                        car.canClear = False
+                        car.delay = car.MAX_DELAY
+                        lightToPush = self.neighbours[direction]
+                        self.pushCarToNextLight(car, nextCarAction, time)
 
     def addNeighbour(self, direction, light):
         """

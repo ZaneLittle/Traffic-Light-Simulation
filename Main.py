@@ -8,8 +8,13 @@ agent = Agent(environment)
 
 # Testing route generation
 routes = environment.generateRoutes()
+state_tracker = []
 
 for time in range(10):
+    # state = {
+    #     "lights": [light.directionIsNorthSouth
+    # for light in environment.lights]
+    # }
     print("Time step: {}".format(time))
     lightDirections = [
         "north/south" if light.directionIsNorthSouth
@@ -19,4 +24,4 @@ for time in range(10):
     print("Directions for traffic lights: {}".format(lightDirections))
     environment.update(time)
     print(str(environment))
-    print("state: {}".format(environment.mapEnvironmentToState(time)))
+    print("state: {}, cost: {}".format(environment.mapEnvironmentToState(time),environment.getCost(time)))

@@ -1,15 +1,19 @@
 import random
+import numpy as np
 
 
 class Agent:
 
-    def __init__(self, environment):
+    def __init__(self, environment, lights=4, discrete_costs=3, num_actions=16):
         ''' 
         init as equiprobable
         the policy for each light is represented as an index of the policy array
         p[a|s]
         '''
         self.environment = environment
+        num_states = (2**lights)*(discrete_costs**(2**(lights)))        # Number of possible lights * traffic wait times
+        self.q_table = np.zeros((num_states, num_actions))
+
         self.policy = [0.5, 0.5, 0.5, 0.5]
         # Parameter used to alter how long the naive lights stay on for before switching direction
         self.phase_time_bound = 1
@@ -36,5 +40,10 @@ class Agent:
             else:
                 env.lights[i].direction = False
 
-    def updatePolicy(self):
-        pass  # stub
+    def state_to
+
+    def eps_greedy(self, state):
+
+
+    def lern(self):
+        pass
