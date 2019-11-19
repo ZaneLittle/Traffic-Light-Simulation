@@ -99,89 +99,114 @@ class Environment:
 
     def generateRoutes(self):
         """
-        Returns a list of all possible routes a car can take
-        Each route is a list where the first and last elements are the start and end points, and all elements
-        in between are the queues (in order) that the car will take
+            Returns a list of all possible routes a car can take
+            Each route is a list where the first element is a tuple (start light, queue direction) and
+            subsequent elements are optimal actions for the car
         """
-        # all_routes = []
 
-        # # Traffic lights
-        # nw_light = self.lights[0]
-        # ne_light = self.lights[1]
-        # sw_light = self.lights[2]
-        # se_light = self.lights[3]
+       #====================== Helper functions here ======================
+        def BFS(g, start_point, end_point):
+            """
+                Breadth first search for directed graph with no weights
+            """
+            explored = []
+            queue = [[start_point]]
 
-        # # Direction a queue is facing
-        # dirs = {0: "n",
-        #         1: "e",
-        #         2: "s",
-        #         3: "w"}
+            if start_point == end_point:
+                return []
 
-        # # Construct graph with the value of each vertex being a list of its neighbours
-        # # Vertices 1, 2, 3, etc. are start/exit points beginning from the nw light north point
-        # # going clockwise. Representing queues as strings and start/end points as ints for
-        # # now just for testing
-        # graph = {dirs[nw_light.queues[2].id]: [8, dirs[ne_light.queues[1].id], dirs[sw_light.queues[2].id]],
-        #          dirs[nw_light.queues[3].id]: [1, 8, dirs[sw_light.queues[2].id]],
-        #          "nw_light.qS": [8, 1, "ne_light.qW"],
-        #          "nw_light.qW": [1, "ne_light.qW", "sw_light.qN"],
-        #          "ne_light.qN": [3, "se_light.qN", "nw_light.qE"],
-        #          "ne_light.qE": [2, "nw_light.qE", "se_light.qN"],
-        #          "ne_light.qS": [3, 2, "nw_light.qE"],
-        #          "ne_light.qW": [2, 3, "se_light.qN"],
-        #          "se_light.qN": [4, 5, "sw_light.qE"],
-        #          "se_light.qE": [5, "ne_light.qS", "sw_light.qE"],
-        #          "se_light.qS": [4, "ne_light.qS", "sw_light.qE"],
-        #          "se_light.qW": [5, 4, "ne_light.qS"],
-        #          "sw_light.qN": [7, 6, "se_light.qW"],
-        #          "sw_light.qE": [6, 7, "nw_light.qS"],
-        #          "sw_light.qS": [7, "nw_light.qS", "se_light.qW"],
-        #          "sw_light.qW": [6, "se_light.qW", "nw_light.qS"],
-        #          1: ["nw_light.qN"],
-        #          2: ["ne_light.qN"],
-        #          3: ["ne_light.qE"],
-        #          4: ["se_light.qE"],
-        #          5: ["se_light.qS"],
-        #          6: ["sw_light.qS"],
-        #          7: ["sw_light.qW"],
-        #          8: ["nw_light.qW"]}
+            while queue:
+                path = queue.pop(0)
+                node = path[-1]
+                if node not in explored:
+                    neighbours = g[node]
+                    # Expand to neighbours and check if we have a complete path
+                    for neighbour in neighbours:
+                        new_path = list(path) + [neighbour]
+                        queue.append(new_path)
+                        if neighbour == end_point:
+                            return new_path
 
-        # def BFS(g, start_point, end_point):
-        #     # Breadth first search for directed graph with no weights
-        #     explored = []
-        #     queue = [[start_point]]
+                    explored.append(node)
 
-        #     if start_point == end_point:
-        #         return []
+            return []
 
-        #     while queue:
-        #         path = queue.pop(0)
-        #         node = path[-1]
-        #         if node not in explored:
-        #             neighbours = g[node]
-        #             # Expand to neighbours and check if we have a complete path
-        #             for neighbour in neighbours:
-        #                 new_path = list(path) + [neighbour]
-        #                 queue.append(new_path)
-        #                 if neighbour == end_point:
-        #                     return new_path
+        all_routes = []
 
-        #             explored.append(node)
+        def get_exit_action(exit_point):
+            """
+                :param exit_point: integer represeting exit location
+                :return: action that car should take to exit the environment
+            """
+            if exit_point == 1 or exit_point == 2:
+                return "n"
+            elif exit_point == 3 or exit_point == 4:
+                return "e"
+            elif exit_point == 5 or exit_point == 6:
+                return "s"
+            else:
+                return "w"
 
-        #     return []
+        # Construct graph with the value of each vertex being a list of its neighbours
+        # Vertices 1, 2, 3, etc. are start/exit points beginning from the NW light north point
+        # going clockwise. Light queues are represented as a tuple (Traffic light, direction)
+        # Traffic light dictionary:
+        #   0: NW
+        #   1: NE
+        #   2: SE
+        #   3: SW
+        graph = {(0, "s"): [8, (1, "e"), (3, "s")],
+                 (0, "w"): [1, 8, (3, "s")],
+                 (0, "n"): [8, 1, (1, "e")],
+                 (0, "e"): [1, (1, "e"), (3, "s")],
+                 (1, "s"): [3, (2, "s"), (0, "w")],
+                 (1, "w"): [2, (0, "w"), (2, "s")],
+                 (1, "n"): [3, 2, (0, "w")],
+                 (1, "e"): [2, 3, (2, "s")],
+                 (2, "s"): [4, 5, (3, "w")],
+                 (2, "w"): [5, (1, "n"), (3, "w")],
+                 (2, "n"): [4, (1, "n"), (3, "w")],
+                 (2, "e"): [5, 4, (1, "n")],
+                 (3, "s"): [7, 6, (2, "e")],
+                 (3, "w"): [6, 7, (0, "n")],
+                 (3, "n"): [7, (0, "n"), (2, "e")],
+                 (3, "e"): [6, (2, "e"), (0, "n")],
+                 1: [(0, "s")],
+                 2: [(1, "s")],
+                 3: [(1, "w")],
+                 4: [(2, "w")],
+                 5: [(2, "n")],
+                 6: [(3, "n")],
+                 7: [(3, "e")],
+                 8: [(0, "e")]}
 
-            # # Shortest point from point a to point b can be found with BFS
-            # for start in set(graph.keys()):
-            #     if type(start) is int:
-            #         # Exclude start point and iterate through every possible end point
-            #         new_graph = {k: graph[k] for k in set(
-            #             list(graph.keys())) - set([start])}
-            #         for end in set(new_graph.keys()):
-            #             if type(end) is int:
-            #                 route = BFS(graph, start, end)
-            #                 all_routes.append(route)
+        # Shortest point from point a to point b can be found with BFS
+        for start in set(graph.keys()):
+            if type(start) is int:
+                # Exclude start point and iterate through every possible end point
+                new_graph = {k: graph[k] for k in set(
+                    list(graph.keys())) - set([start])}
+                for end in set(new_graph.keys()):
+                    if type(end) is int:
+                        route = BFS(graph, start, end)
+                        all_routes.append(route)
 
-            # return all_routes}
+        # Currently a route has the form [start, (light, dir), ..., (light, dir), end]. We need to
+        # modify the list so that each route has first element as tuple (starting light, direction) and
+        # subsequent elements as actions.
+        # e.g. [(0, 2), "s", "s"] ==> starting at NW light's queue facing south, go south, go south
+        dirs = {"n": 0, "e": 1, "s": 2, "w": 3}
+        for idx, route in enumerate(all_routes):
+            new_route = []
+            start_light = route[1][0]
+            start_dir = dirs[route[1][1]]
+            new_route.append((start_light, start_dir))  # Add on starting light and queue
+            for queue in route[2:-1]:
+                new_route.append(queue[1])  # Add on action
+            new_route.append(get_exit_action(route[-1]))
+            all_routes[idx] = new_route
+
+        return all_routes
 
     def __str__(self):
         nw = self.lights[0]

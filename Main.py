@@ -8,6 +8,8 @@ agent = Agent(environment)
 
 # Testing route generation
 routes = environment.generateRoutes()
+#print(routes)
+
 state_tracker = []
 
 for time in range(10):
@@ -25,3 +27,4 @@ for time in range(10):
     environment.update(time)
     print(str(environment))
     print("state: {}, cost: {}".format(environment.mapEnvironmentToState(time),environment.getCost(time)))
+

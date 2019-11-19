@@ -39,7 +39,7 @@ class Agent:
                 env.lights[i].direction = False
             else:
                 env.lights[i].direction = False
-
+"""
     def state_to
 
     def eps_greedy(self, state):
@@ -47,3 +47,4 @@ class Agent:
 
     def lern(self):
         pass
+"""
