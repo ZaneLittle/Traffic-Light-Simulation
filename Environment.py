@@ -3,7 +3,6 @@ from LightQueue import LightQueue
 from Car import Car
 from TrafficLight import TrafficLight
 
-
 class Environment:
     '''
         Represents our environment with 4 traffic lights
@@ -43,31 +42,52 @@ class Environment:
         queue.pushCar(car, time)
         numCars = light.getNumCars()
 
-    def addAllCars(self, time):
+
+
+
+
+    # TODO: create path through update for all_routes
+    def addAllCars(self, time, allRoutes):
         """
             Probabilistically determines how many cars should be added at a given
             time step
         """
-        if self.getNumCars >= self.MAX_CARS:
-            return
+      
+        highTraffic = time in range(5, 10) or time in range(15, 20)
+        numCarsToAdd = 0
 
-    def update(self, time):
+        if highTraffic:
+            numCarsToAdd = random.randint(2, 4)
+        else:
+            numCarsToAdd = random.randint(5, 10)
+
+        for _ in range(numCarsToAdd):
+            route = random.choice(allRoutes)
+            print("A car's route is ",route)
+            newCar = Car(route, startTime=time)
+            self.addCarToQueue(newCar, time)
+
+
+    def update(self, time, allRoutes):
         # Add car
         # For now only add one car so we can see if the environment is working properly
-        newCar1 = Car([(0, 2), "s", "s"], startTime=time)
-        newCar2 = Car([(3, 0), "n", "e", "e"], startTime=time)
-        newCar3 = Car([(1, 1), "w", "s", "s"], startTime=time)
-        newCar4 = Car([(2, 0), "n", "e", "s", "s"], startTime=time)
-        if time == 0:
-            self.addCarToQueue(newCar1, time)
-            self.addCarToQueue(newCar2, time)
-            self.addCarToQueue(newCar3, time)
-            self.addCarToQueue(newCar4, time)
-        if time == 5:
-            self.addCarToQueue(newCar1, time)
-            self.addCarToQueue(newCar2, time)
-            self.addCarToQueue(newCar3, time)
-            self.addCarToQueue(newCar4, time)
+        # newCar1 = Car([(0, 2), "s", "s"], startTime=time)
+        # newCar2 = Car([(3, 0), "n", "e", "e"], startTime=time)
+        # newCar3 = Car([(1, 1), "w", "s", "s"], startTime=time)
+        # newCar4 = Car([(2, 0), "n", "e", "s", "s"], startTime=time)
+        # if time == 0:
+        #     self.addCarToQueue(newCar1, time)
+        #     self.addCarToQueue(newCar2, time)
+        #     self.addCarToQueue(newCar3, time)
+        #     self.addCarToQueue(newCar4, time)
+        # if time == 5:
+        #     self.addCarToQueue(newCar1, time)
+        #     self.addCarToQueue(newCar2, time)
+        #     self.addCarToQueue(newCar3, time)
+        #     self.addCarToQueue(newCar4, time)
+
+        # Testing route generation
+        self.addAllCars(time, allRoutes)
         for light in self.lights:
             light.updateQueues(time)
 
@@ -135,8 +155,7 @@ class Environment:
 
         def get_exit_action(exit_point):
             """
-                :param exit_point: integer represeting exit location
-                :return: action that car should take to exit the environment
+                Returns finaction a car should take to exit at the correct location
             """
             if exit_point == 1 or exit_point == 2:
                 return "n"
