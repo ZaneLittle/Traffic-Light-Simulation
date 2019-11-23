@@ -58,8 +58,10 @@ class Visualizer:
 
     def createLightQueue(self, queue, queueIndex, lightIndex, lightCenterX, lightCenterY):
         queueCenterX, queueCenterY = self.drawLightQueue(queue, queueIndex, lightCenterX, lightCenterY)
+        # if queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["n"] and lightIndex == ENV_CONSTANTS["LIGHT_POSITIONS"]["SE"]:
         numCars = queue.getNumCarsDriving()
-        self.createCars(numCars, queueCenterX, queueCenterY, queueIndex)
+        self.createCars(numCars, queueCenterX, queueCenterY, queueIndex, lightIndex)
+            # print([car.delay for car in queue.cars])
 
     def drawLightQueue(self, queue, queueIndex, xCenter, yCenter):
         xOffset, yOffset = self.getQueueOffset(queueIndex)
@@ -68,11 +70,11 @@ class Visualizer:
         self.canvas.create_text(x, y, font=("Arial", 24), text=str(queue.getNumCarsWaiting()))
         return x, y
 
-    def createCars(self, numCars, queueCenterX, queueCenterY, queueIndex):
+    def createCars(self, numCars, queueCenterX, queueCenterY, queueIndex, lightIndex):
         # if numCars:
-        self.drawCars(numCars, queueCenterX, queueCenterY, queueIndex)
+        self.drawCars(numCars, queueCenterX, queueCenterY, queueIndex, lightIndex)
     
-    def drawCars(self, numCars, endX, endY, queueIndex):
+    def drawCars(self, numCars, endX, endY, queueIndex, lightIndex):
         size = 100
         padding = 20
 
@@ -88,57 +90,65 @@ class Visualizer:
 
         if queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["n"]:
             x1 = endX
-            y1 = endY - size
-            x2 = endX
-            y2 = endY - padding
-            xText = (x1 + x2) / 2 + padding
-            yText = (y1 + y2) / 2
-        elif queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["e"]:
-            x1 = endX + size
-            y1 = endY
-            x2 = endX + padding
-            y2 = endY
-            xText = (x1 + x2) / 2
-            yText = (y1 + y2) / 2 + padding
-        elif queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["s"]:
-            x1 = endX
             y1 = endY + size
             x2 = endX
             y2 = endY + padding
             xText = (x1 + x2) / 2 + padding
             yText = (y1 + y2) / 2
-        else:  # ENV_CONSTANTS["QUEUE_DIR"]["w"]
+        elif queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["e"]:
             x1 = endX - size
             y1 = endY
             x2 = endX - padding
             y2 = endY
             xText = (x1 + x2) / 2
             yText = (y1 + y2) / 2 + padding
+        elif queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["s"]:
+            x1 = endX
+            y1 = endY - size
+            x2 = endX
+            y2 = endY - padding
+            xText = (x1 + x2) / 2 + padding
+            yText = (y1 + y2) / 2
+        else:  # ENV_CONSTANTS["QUEUE_DIR"]["w"]
+            x1 = endX + size
+            y1 = endY
+            x2 = endX + padding
+            y2 = endY
+            xText = (x1 + x2) / 2
+            yText = (y1 + y2) / 2 + padding
+            
 
         line = self.canvas.create_line(x1, y1, x2, y2, arrow=LAST, width=3, fill="blue")
 
         text = self.canvas.create_text(xText, yText, font=("Arial", 16), text=str(numCars), fill="blue")
 
     def getCoordinatesFromLightIndex(self, lightIndex):
-        if lightIndex == 0:
+        NW = ENV_CONSTANTS["LIGHT_POSITIONS"]["NW"]
+        NE = ENV_CONSTANTS["LIGHT_POSITIONS"]["NE"]
+        SE = ENV_CONSTANTS["LIGHT_POSITIONS"]["SE"]
+        if lightIndex == NW:
             return (0, 0)
-        elif lightIndex == 1:
+        elif lightIndex == NE:
             return (0, 1)
-        elif lightIndex == 2:
+        elif lightIndex == SE:
             return (1, 1)
-        else:
+        else: # West
             return (1, 0)
     
     def getQueueOffset(self, queueIndex):
         offset = 50
-        if queueIndex == 0:
-            return 0, -offset
-        elif queueIndex == 1:
-            return offset, 0
-        elif queueIndex == 2:
+        n = ENV_CONSTANTS["QUEUE_DIR"]["n"]
+        e = ENV_CONSTANTS["QUEUE_DIR"]["e"]
+        s = ENV_CONSTANTS["QUEUE_DIR"]["s"]
+
+        if queueIndex == n:
             return 0, offset
-        else:
+        elif queueIndex == e:
             return -offset, 0
+        elif queueIndex == s:
+            return 0, -offset
+        else:  # west
+            return offset, 0
     
     def getCarOffset(self, progress, queueIndex):
         maxOffset = 30

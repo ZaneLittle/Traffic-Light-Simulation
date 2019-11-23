@@ -75,8 +75,9 @@ class TrafficLight:
             queues = [self.queues[1], self.queues[3]]
 
         for queue in self.queues:
-            # Delay > 0 => that the car is in motion to the light queue. 
-            map(__subtract,queue.cars)
+            for car in queue.cars:
+                car.delay = max(0,car.delay-1)
+                # map(__subtract,queue.cars)
         for queue in queues:
             if queue.getNumCars():
                 peakedCar = queue.peakCar()
