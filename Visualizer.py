@@ -1,75 +1,67 @@
+from pylab import *
 from tkinter import *
-import time
+import time as tm
 
-class Visualization(Frame):
-    def __init__(self, master=None):
-        Frame.__init__(self, master)               
-        self.master = master
-        self.canvas = Canvas(master)
-        self.lights = [TrafficLight(self.canvas, 0, 0, True), TrafficLight(self.canvas, 0, 1, False), TrafficLight(self.canvas, 1, 1, True), TrafficLight(self.canvas, 1, 0, False)]
-    
-    def updateLightDirections(self, directions):
-        for i, direction in enumerate(directions):
-            self.lights[i].update(direction)
+from Environment import Environment
 
-    def updateQueueLengths(self):
+
+class Visualizer:
+
+    def __init__(self):
+        self.environment = Environment(0, 10)
+
+        canvasSize = self.createCanvas()
+        self.gui.update()
+        self.gui.title("Traffic Light Simulation")
+
+    def runSimulation(self):
+        for time in range(10):
+            self.environment.update(time)
+            self.updateFrame(time);
+            tm.sleep(0.1)
+
+
+    def updateFrame(self, time):
+        self.canvas.delete("all")
+        self.updateTrafficLights()
+        self.canvas.config(bg="red" if time % 2 else "blue")
+        self.gui.update()
+
+    def updateTrafficLights(self):
+        for lightIndex, light in enumerate(environment.lights):
+            self.createTrafficLight(light, lightIndex)
+
+    def createTrafficLight(self,light, lightIndex):
+        for queueIndex, queue in light.queues:
+            self.createLightQueue(queue, lightIndex, queueIndex)
+
+    def createLightQueue(self, queue, lightIndex, queueIndex):
+        for car in queue.cars:
+            if car.delay:
+                self.createDrivingCar(car, lightIndex, queueIndex)
+
+    def createDrivingCar(self, car, lightIndex, queueIndex):
         pass
 
-    def updateCarsInTransit(self):
-        pass
+    # def moveTo(self, canvas, oval, x, y):
+    #     currentCoords = canvas.coords(oval)
+    #     currentX = (currentCoords[0] + currentCoords[2]) // 2
+    #     currentY = (currentCoords[1] + currentCoords[3]) // 2
 
+    #     xDiff = x - currentX
+    #     yDiff = y - currentY
 
-class TrafficLight():
-    def __init__(self, canvas, x, y, isNorthSouth):
-        self.size = 50
-        self.canvas = canvas
-        self.x = x*100
-        self.y = y*100
-        self.centerX = self.x + self.size / 2
-        self.centerY = self.y + self.size / 2
-        self.isNorthSouth = isNorthSouth
-        self.createArrow()
-    
-    def update(self, isNorthSouth):
-        self.isNorthSouth = isNorthSouth
-        self.deleteArrow()
-        self.createArrow()
-    
-    def deleteArrow(self):
-        self.canvas.delete(self.arrow)
-    
-    def createArrow(self):
-        startX = None
-        startY = None
-        endX = None
-        endY = None
-        if self.isNorthSouth:
-            startX = self.centerX
-            endX = self.centerX
-            startY = self.y
-            endY = self.y + self.size
-        else:
-            startY = self.centerY
-            endY = self.centerY
-            startX = self.x
-            endX = self.x + self.size
+    #     canvas.move(oval, xDiff, yDiff)
 
-        self.arrow = self.canvas.create_line(startX, startY, endX, endY, arrow=BOTH, width=3)
-        
-class QueueLabel():
-    pass
+    def createCanvas(self):
+        self.gui = Tk()
+        canvasSize = min(int(self.gui.winfo_screenheight() * 0.9), 900)
+        self.gui.geometry("{}x{}".format(canvasSize, canvasSize))
+        self.canvas = Canvas(self.gui, width=canvasSize,
+                        height=canvasSize, background="#fafafa")
+        self.canvas.pack()
+        return canvasSize
 
-class Car():
-    pass
+gui = Visualizer()
 
-if __name__ == "__main__":
-    root = Tk()
-    app = Visualization(root)
-    app.canvas.pack()
-    root.update()
-    time.sleep(1)
-    app.updateLightDirections([True,True,True,True])
-    root.update()
-    time.sleep(1)
-    app.updateLightDirections([False,False,False,False])
-    root.update()
+gui.runSimulation()
