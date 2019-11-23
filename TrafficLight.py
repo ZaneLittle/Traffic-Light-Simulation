@@ -17,7 +17,6 @@ class TrafficLight:
             1), LightQueue(2), LightQueue(3)]
         # LIGHT NOTATION: 0 = northern neighbour, 1 = east neighbour, 2 = south neighbour, 3 = west neighbour
         self.neighbours = [None, None, None, None]
-        self.dirs = LIGHT_CONSTANTS["ACTION_DIR"]
     
     def changeLight(self, time):
         ''' Toggle light direction and set time '''
@@ -53,7 +52,7 @@ class TrafficLight:
             action == "s" => push car to south neighbour's south facing queue
             ... etc.
         """
-        direction = self.dirs[action]
+        direction = LIGHT_CONSTANTS["ACTION_DIR"][action]
         assert self.neighbours[direction], "neighbor does not exist"
         queue = self.neighbours[direction].queues[direction]
         initLength = queue.getNumCars()
@@ -62,6 +61,7 @@ class TrafficLight:
 
     def updateQueues(self, time):
         ''' Move cars in direction the light is set '''
+        def __subtract(car): car.delay = max(0,car.delay-1)
         queues = []
         if self.directionIsNorthSouth:
             queues = [self.queues[0], self.queues[2]]
@@ -69,14 +69,13 @@ class TrafficLight:
             queues = [self.queues[1], self.queues[3]]
 
         for queue in self.queues:
-            for car in queue.cars:
-                car.delay = max(0,car.delay-1)
+            map(__subtract,queue.cars)
         for queue in queues:
             if queue.getNumCars():
                 peakedCar = queue.peakCar()
                 assert(peakedCar.route)
                 nextCarAction = peakedCar.route[0]
-                direction = self.dirs[nextCarAction]
+                direction = LIGHT_CONSTANTS["ACTION_DIR"][nextCarAction]
                 if peakedCar.delay > 0:
                     peakedCar.delay = max(0,peakedCar.delay-1)
                 else:
@@ -101,7 +100,7 @@ class TrafficLight:
             Takes in a direction (n,e,s,w) and a traffic light and adds it to be an adjacent 
             traffic light.
         """
-        lightToChange = self.dirs[direction]
+        lightToChange = LIGHT_CONSTANTS["ACTION_DIR"][direction]
         self.neighbours[lightToChange] = light
 
     def __str__(self):

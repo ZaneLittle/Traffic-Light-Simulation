@@ -59,10 +59,7 @@ class Visualizer:
     def createLightQueue(self, queue, queueIndex, lightIndex, lightCenterX, lightCenterY):
         queueCenterX, queueCenterY = self.drawLightQueue(queue, queueIndex, lightCenterX, lightCenterY)
         numCars = queue.getNumCarsDriving()
-
-        if lightIndex == 0 and queueIndex == 0:
-            self.createCars(numCars, queueCenterX, queueCenterY, queueIndex)
-            print(numCars)
+        self.createCars(numCars, queueCenterX, queueCenterY, queueIndex)
 
     def drawLightQueue(self, queue, queueIndex, xCenter, yCenter):
         xOffset, yOffset = self.getQueueOffset(queueIndex)

@@ -1,8 +1,8 @@
 from Environment import Environment
-from Agent import Agent
+# from Agent import Agent
 
 environment = Environment(0)
-agent = Agent(environment)
+# agent = Agent(environment)
 
 # Create all possible routes
 routes = environment.generateRoutes()
