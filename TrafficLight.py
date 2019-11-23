@@ -32,11 +32,11 @@ class TrafficLight:
             # Bin the total wait time
             # Update size of Q table if number of bins changes
             if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["medium_wait"]:
-                return 9
+                return 2
             elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_wait"]:
-                return 4
-            else:
                 return 1
+            else:
+                return 0
         NS = __bin(sum(self.queues[0].getWaitTimes(
             time) + self.queues[2].getWaitTimes(time)))
         EW = __bin(sum(self.queues[1].getWaitTimes(
@@ -64,10 +64,9 @@ class TrafficLight:
             queues = [self.queues[0], self.queues[2]]
         else:
             queues = [self.queues[1], self.queues[3]]
-
-        for queue in queues:
-            for car in queue.cars:
+        for car in self.queues.cars:
                 car.delay = max(0,car.delay-1)
+        for queue in queues:
             if queue.getNumCars():
                 peakedCar = queue.peakCar()
                 assert(peakedCar.route)

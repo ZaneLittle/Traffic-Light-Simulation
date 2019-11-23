@@ -16,9 +16,6 @@ for route in routes:
     else:
         routesFromBottom.append(route)
 
-#print(routesFromTop)
-#print(routesFromBottom)
-
 state_tracker = []
 
 for time in range(20):
