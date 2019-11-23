@@ -1,9 +1,11 @@
 import random
 import numpy as np
+from itertools import permutations
+from config import STATE_COSTANTS
 
 class Agent:
 
-    def __init__(self, environment, discount=0.5, epsilon=0.01, lr=0.9 ,lights=4, discreteCosts=3, numCctions=16, numDayTime=5):
+    def __init__(self, environment, discount=0.5, epsilon=0.01, lr=0.9 ,lights=4, discreteCosts=3, numActions=16, numDayTime=5):
         ''' 
         init as equiprobable
         the policy for each light is represented as an index of the policy array
@@ -12,7 +14,8 @@ class Agent:
         State representation:
             [
                 L1Direction,...,L4Direction,
-                f(L1CulmTime(N/S)),f(L1CulmTime(E/W)),...,f(L4CulmTime(N/S)),f(L4CulmTime(E/W))
+                f(L1CulmTime(N/S)),f(L1CulmTime(E/W)),...,f(L4CulmTime(N/S)),f(L4CulmTime(E/W)),
+                timeOfDay
             ]
         '''
         self.discount = discount
@@ -22,6 +25,8 @@ class Agent:
         self.numStates = (2**lights)*(discreteCosts**(2**(lights)))*numDayTime # Number of possible lights * traffic wait times * times of day
         self.numActions = numActions
         self.qTable = np.zeros((self.numStates, self.numActions))
+        self.lightChangeCost = -1
+        self.actionMap = self.generateActionMap()
 
         self.policy = [0.5, 0.5, 0.5, 0.5]
         # Parameter used to alter how long the naive lights stay on for before switching direction
@@ -29,26 +34,41 @@ class Agent:
         # Time elapses since lights have last changed direction
         self.currentPhaseTime = 0
 
+    def generateActionMap(self):
+        lst = [0,0,0,0]
+        actionMap = []
+        for i in range(4):
+            perms = set(permutations(lst))
+            for action in perms:
+                actionMap.append(action)
+            lst[i] = 1
+        actionMap.append(lst)
+        return actionMap
 
     def stateToQind(self, state):
         """
-            returns the state based on the environment
-            [
+            Returns the index of a particular state for the Q-table. 
+            Note the state variable is of the form:
+            state = [
                 L1Direction,...,L4Direction,
                 f(L1CulmTime(N/S)),f(L1CulmTime(E/W)),...,f(L4CulmTime(N/S)),f(L4CulmTime(E/W)),
                 timeOfDay
             ]
         """
+        numStates = len(state)
         # Stores the number of possible values that a particular entry in state might have,
         # e.g. size_of_states[0] = 2 means that state[0] can take on one of only two possible values 
-        sizeOfStates = [2]*4 # Four traffic lights
-        sizeOfStates += [3]*8 # 8 queues
-        sizeOfStates += [5]
-        
-        dotProduct = np.dot(vec1,vec) 
+        sizeOfStates = [STATE_COSTANTS["LIGHTS"]["numStates"]] * STATE_COSTANTS["LIGHTS"]["quantity"]  
+        sizeOfStates += [STATE_COSTANTS["QUEUES"]["numStates"]] * STATE_COSTANTS["QUEUES"]["quantity"]  
+        sizeOfStates += [STATE_COSTANTS["TIME_OF_DAY"]["numStates"]] * STATE_COSTANTS["TIME_OF_DAY"]["quantity"]
+        assert numStates == len(sizeOfStates)
+        coeff = [0]*numStates
+        coeff[-1] = 1
+        for i in range(2,len(coeff)+1):
+            coeff[-i] = coeff[-i+1]*sizeOfStates[-i+1]
+        index = np.dot(np.array(state),np.array(coeff))
 
-        index = state[11]* + state[12]
-        
+        return index
 
 
     def eGreedy(self, state):
@@ -66,49 +86,55 @@ class Agent:
             bestAction = np.argmax(self.qTable[qind])
             policy[bestAction] += 1.0 - self.epsilon
 
-        return np.random.choice(np.arrange(len(policy)), p=policy)    
+        return np.random.choice(np.arange(len(policy)), p=policy)    
 
 
     def update(self, time, env=None):
-        ''' update for given time step '''
+        ''' 
+        Update for given time step 
+        Return reward ratio based on number of cars in the environment
+        '''
         self.currentPhaseTime = self.currentPhaseTime + 1
         # For now, test with a naive, constant policy of light changing
         if not env:
             self.constantPolicy(time) 
+            return None
         else:
             # Retrieve e-greedy action and take it
-            oldState = env.mapEnvToState(time)
-            action = self.eGreedy(oldState)
+            oldState = env.toState(time)
+            actionIndex = self.eGreedy(oldState)
+            action = self.actionMap[actionIndex]
             reward = 0
-            for newLighDir, oldLightDir, i in zip(action, oldState[:4], range(0,4)): 
-                if newLightDir not oldLightDir:
-                    env.lights(i).changeLight(time)        
-                    reward -= 1
+            for newLightDir, oldLightDir, i in zip(action, oldState[:4], range(0,4)): 
+                if not newLightDir is oldLightDir:
+                    env.lights[i].changeLight(time) 
+                    reward += self.lightChangeCost
     
-            # Get indecies
-            S_qind = self.state_to_qind(new_state)
-            qind = self.state_to_qind(old_state)
-            greedy_next = np.max(self.q_table[S_qind])
-            old_val = self.q_table[q_ind][action]
+            # Get indices
+            newState = env.toState(time)
+            newStateQind = self.stateToQind(newState)
+            qind = self.stateToQind(oldState)
+            greedyNext = np.max(self.qTable[newStateQind])
+            oldVal = self.qTable[qind][actionIndex]
 
-            reward -= self.env.getCost(time)
+            reward -= env.getCost(time)
 
             # Update Q table
-            self.q_table[q_ind][action] = self.lr * (reward + self.discount * greedy_next - old_val)
+            self.qTable[qind][actionIndex] = self.lr * (reward + self.discount * greedyNext - oldVal)
+            
+            
+            numCars = env.getNumCars()
+            print("time: {} \t reward: {} \t num cars: {}".format(time, reward, numCars))
+             
+            if numCars:
+                return reward/numCars
+            else:
+                return 0
 
-
-    def constant_policy(self, time):
+    def constantPolicy(self, time):
         # If enough time has elapsed, change light direction
-        if self.current_phase_time >= self.phase_time_bound:
-            self.current_phase_time = 0
+        if self.currentPhaseTime >= self.phaseTimeBound:
+            self.currentPhaseTime = 0
             for light in self.environment.lights:
                 # Toggle light direction
                 light.changeLight(time)
-
-
-    def learning_policy(self, env):
-        for i in range(len(self.policy)):
-            if(random.random() > self.policy[i]):
-                env.lights[i].direction = False
-            else:
-                env.lights[i].direction = False
