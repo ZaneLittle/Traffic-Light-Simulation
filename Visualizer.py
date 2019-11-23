@@ -2,7 +2,7 @@ from pylab import *
 from tkinter import *
 import time as tm
 from config import ENV_CONSTANTS
-
+from Agent import Agent
 from Environment import Environment
 
 class Visualizer:
@@ -16,11 +16,14 @@ class Visualizer:
         self.lightOffset = 350
         self.padding = 200
 
+        self.agent = Agent(self.environment)
+
     def runSimulation(self):
         routes = self.environment.generateRoutes()    
         for time in range(100):
             self.environment.update(time, routes)
-            self.updateFrame(time);
+            self.agent.update(time, self.environment)
+            self.updateFrame(time)
             tm.sleep(0.3)
 
     def updateFrame(self, time):
