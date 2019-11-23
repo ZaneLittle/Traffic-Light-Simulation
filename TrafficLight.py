@@ -1,6 +1,7 @@
 import math
 from LightQueue import LightQueue
 from Car import Car
+from config import LIGHT_CONSTANTS
 
 
 class TrafficLight:
@@ -16,12 +17,7 @@ class TrafficLight:
             1), LightQueue(2), LightQueue(3)]
         # LIGHT NOTATION: 0 = northern neighbour, 1 = east neighbour, 2 = south neighbour, 3 = west neighbour
         self.neighbours = [None, None, None, None]
-        self.dirs = {  # direction the car is facing in that queue
-            "n": 0,
-            "e": 1,
-            "s": 2,
-            "w": 3
-        }
+        self.dirs = LIGHT_CONSTANTS["ACTION_DIR"]
     
     def changeLight(self, time):
         ''' Toggle light direction and set time '''
@@ -35,9 +31,9 @@ class TrafficLight:
         def __bin(wait_time):
             # Bin the total wait time
             # Update size of Q table if number of bins changes
-            if wait_time > 30:
+            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["medium_wait"]:
                 return 9
-            elif wait_time > 15:
+            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_wait"]:
                 return 4
             else:
                 return 1
@@ -54,20 +50,11 @@ class TrafficLight:
             action == "s" => push car to south neighbour's south facing queue
             ... etc.
         """
-        QUEUE_POSITION = {
-            "NW": 0,
-            "NE": 1,
-            "SW": 2,
-            "SE": 3
-        }
         direction = self.dirs[action]
         assert self.neighbours[direction], "neighbor does not exist"
         queue = self.neighbours[direction].queues[direction]
         initLength = queue.getNumCars()
         queue.pushCar(car, time)
-        car.position = (
-            QUEUE_POSITION[self.neighbours[direction].id], queue.id)
-        print(car.position)
         assert(queue.getNumCars() - initLength == 1)
 
     def updateQueues(self, time):

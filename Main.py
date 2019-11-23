@@ -1,9 +1,7 @@
 from Environment import Environment
 from Agent import Agent
 
-MAX_CARS = 100
-
-environment = Environment(0, MAX_CARS)
+environment = Environment(0)
 agent = Agent(environment)
 
 # Create all possible routes

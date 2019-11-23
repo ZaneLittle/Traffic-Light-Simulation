@@ -2,34 +2,44 @@ import random
 from LightQueue import LightQueue
 from Car import Car
 from TrafficLight import TrafficLight
-
+from config import ENV_CONSTANTS
 class Environment:
     '''
         Represents our environment with 4 traffic lights
     '''
 
-    def __init__(self, time, MAX_CARS=100):
+    def __init__(self, time):
 
         # [0] = north-west
         # [1] = north-east
-        # [2] = south-west
-        # [3] = south-east
-        self.lights = [TrafficLight("NW"), TrafficLight("NE"),
-                       TrafficLight("SE"), TrafficLight("SW")]
+        # [2] = south-east
+        # [3] = south-west
+        self.__init_lights()
+        self.lights = self.__init_lights()
+        self.MAX_CARS = ENV_CONSTANTS["MAX_CARS"]
 
-        self.lights[0].addNeighbour('e', self.lights[1])
-        self.lights[0].addNeighbour('s', self.lights[3])
+    def __init_lights(self):
+        lights = [None,None,None,None]
+        for key in ENV_CONSTANTS["LIGHT_POSITIONS"]:
+            # NW light has a key at 0, this is the index in the lights array that it will reside
+            position = ENV_CONSTANTS["LIGHT_POSITIONS"][key]
+            lights[position] = TrafficLight(key)   
+        NW = ENV_CONSTANTS["LIGHT_POSITIONS"]["NW"]
+        NE = ENV_CONSTANTS["LIGHT_POSITIONS"]["NE"]
+        SE = ENV_CONSTANTS["LIGHT_POSITIONS"]["SE"]
+        SW = ENV_CONSTANTS["LIGHT_POSITIONS"]["SW"]
+        lights[NW].addNeighbour('e', lights[NE])
+        lights[NW].addNeighbour('s', lights[SW])
 
-        self.lights[1].addNeighbour('w', self.lights[0])
-        self.lights[1].addNeighbour('s', self.lights[2])
+        lights[NE].addNeighbour('w', lights[NW])
+        lights[NE].addNeighbour('s', lights[SE])
 
-        self.lights[2].addNeighbour('n', self.lights[1])
-        self.lights[2].addNeighbour('w', self.lights[3])
+        lights[SE].addNeighbour('n', lights[NE])
+        lights[SE].addNeighbour('w', lights[SW])
 
-        self.lights[3].addNeighbour('n', self.lights[0])
-        self.lights[3].addNeighbour('e', self.lights[2])
-
-        self.MAX_CARS = MAX_CARS
+        lights[SW].addNeighbour('n', lights[NW])
+        lights[SW].addNeighbour('e', lights[SE])
+        return lights
 
     def addCarToQueue(self, car, time):
         position = car.route.pop(0)
@@ -42,18 +52,14 @@ class Environment:
         queue.pushCar(car, time)
         numCars = light.getNumCars()
 
-
-
-
-
     # TODO: create path through update for all_routes
     def addAllCars(self, time, allRoutes):
         """
             Probabilistically determines how many cars should be added at a given
             time step
         """
-      
-        highTraffic = time in range(5, 10) or time in range(15, 20)
+
+        highTraffic = any(t[0] <= time <= t[1] for t in ENV_CONSTANTS["RUSH_HOUR_TIMES"])
         numCarsToAdd = 0
 
         if highTraffic:
@@ -62,11 +68,10 @@ class Environment:
             numCarsToAdd = random.randint(5, 10)
 
         for _ in range(numCarsToAdd):
-            route = random.choice(allRoutes)
+            route = random.choice(allRoutes)[:]
             print("A car's route is ",route)
             newCar = Car(route, startTime=time)
             self.addCarToQueue(newCar, time)
-
 
     def update(self, time, allRoutes):
         # Add car
@@ -174,6 +179,11 @@ class Environment:
         #   1: NE
         #   2: SE
         #   3: SW
+        NW = ENV_CONSTANTS["LIGHT_POSITIONS"]["NW"]
+        NE = ENV_CONSTANTS["LIGHT_POSITIONS"]["NE"]
+        SE = ENV_CONSTANTS["LIGHT_POSITIONS"]["SE"]
+        SW = ENV_CONSTANTS["LIGHT_POSITIONS"]["SW"]
+
         graph = {(0, "s"): [8, (1, "e"), (3, "s")],
                  (0, "w"): [1, 8, (3, "s")],
                  (0, "n"): [8, 1, (1, "e")],
@@ -214,7 +224,7 @@ class Environment:
         # modify the list so that each route has first element as tuple (starting light, direction) and
         # subsequent elements as actions.
         # e.g. [(0, 2), "s", "s"] ==> starting at NW light's queue facing south, go south, go south
-        dirs = {"n": 0, "e": 1, "s": 2, "w": 3}
+        dirs = ENV_CONSTANTS["QUEUE_DIR"]
         for idx, route in enumerate(all_routes):
             new_route = []
             start_light = route[1][0]
