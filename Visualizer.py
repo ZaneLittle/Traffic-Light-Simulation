@@ -1,13 +1,14 @@
 from pylab import *
 from tkinter import *
 import time as tm
+from config import ENV_CONSTANTS
 
 from Environment import Environment
 
 class Visualizer:
 
     def __init__(self):
-        self.environment = Environment(0, 10)
+        self.environment = Environment(0)
 
         canvasSize = self.createCanvas()
         self.gui.update()
@@ -17,11 +18,10 @@ class Visualizer:
 
     def runSimulation(self):
         routes = self.environment.generateRoutes()    
-        for time in range(40):
+        for time in range(100):
             self.environment.update(time, routes)
             self.updateFrame(time);
             tm.sleep(0.3)
-
 
     def updateFrame(self, time):
         self.canvas.delete("all")
@@ -36,9 +36,6 @@ class Visualizer:
         xCenter, yCenter = self.drawTrafficLight(light, lightIndex)
         for queueIndex, queue in enumerate(light.queues):
             self.createLightQueue(queue, queueIndex, lightIndex, xCenter, yCenter)
-    
-    def encodeEmoji(self, emoji):
-        return ''.join(chr(x) for x in struct.unpack('>2H', emoji.encode('utf-16be')))
 
     def drawTrafficLight(self, light, lightIndex):
         direction = light.directionIsNorthSouth
@@ -49,7 +46,6 @@ class Visualizer:
         yTop = position[1] * self.lightOffset + self.padding
         xRight = xLeft + length
         yBottom = yTop + length
-
         xCenter = (xLeft + xRight) / 2
         yCenter = (yTop + yBottom) / 2
 
@@ -62,25 +58,26 @@ class Visualizer:
 
     def createLightQueue(self, queue, queueIndex, lightIndex, lightCenterX, lightCenterY):
         queueCenterX, queueCenterY = self.drawLightQueue(queue, queueIndex, lightCenterX, lightCenterY)
-        numCars = len([car for car in queue.cars if car.delay])
-        self.createCars(numCars, queueCenterX, queueCenterY, queueIndex)
+        numCars = queue.getNumCarsDriving()
+
+        if lightIndex == 0 and queueIndex == 0:
+            self.createCars(numCars, queueCenterX, queueCenterY, queueIndex)
+            print(numCars)
 
     def drawLightQueue(self, queue, queueIndex, xCenter, yCenter):
         xOffset, yOffset = self.getQueueOffset(queueIndex)
         x = xCenter + xOffset
         y = yCenter + yOffset
-        
-        self.canvas.create_text(x, y, font=("Arial", 24), text=str(queue.getNumCars()))
-
+        self.canvas.create_text(x, y, font=("Arial", 24), text=str(queue.getNumCarsWaiting()))
         return x, y
 
     def createCars(self, numCars, queueCenterX, queueCenterY, queueIndex):
-        if numCars:
-            self.drawCars(numCars, queueCenterX, queueCenterY, queueIndex)
+        # if numCars:
+        self.drawCars(numCars, queueCenterX, queueCenterY, queueIndex)
     
     def drawCars(self, numCars, endX, endY, queueIndex):
         size = 100
-        padding = 40
+        padding = 20
 
         line = None
         x1 = None
@@ -92,45 +89,38 @@ class Visualizer:
         xText = None
         yText = None
 
-        if queueIndex == 0:
+        if queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["n"]:
             x1 = endX
             y1 = endY - size
             x2 = endX
             y2 = endY - padding
-
             xText = (x1 + x2) / 2 + padding
             yText = (y1 + y2) / 2
-        elif queueIndex == 1:
+        elif queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["e"]:
             x1 = endX + size
             y1 = endY
             x2 = endX + padding
             y2 = endY
-
             xText = (x1 + x2) / 2
             yText = (y1 + y2) / 2 + padding
-        elif queueIndex == 2:
+        elif queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["s"]:
             x1 = endX
             y1 = endY + size
             x2 = endX
             y2 = endY + padding
-
             xText = (x1 + x2) / 2 + padding
             yText = (y1 + y2) / 2
-        else:
+        else:  # ENV_CONSTANTS["QUEUE_DIR"]["w"]
             x1 = endX - size
             y1 = endY
             x2 = endX - padding
             y2 = endY
-
             xText = (x1 + x2) / 2
             yText = (y1 + y2) / 2 + padding
 
-        line = self.canvas.create_line(x1, y1, x2, y2, arrow=LAST, width=3)
+        line = self.canvas.create_line(x1, y1, x2, y2, arrow=LAST, width=3, fill="blue")
 
-        text = self.canvas.create_text(xText, yText, font=("Arial", 16), text=str(numCars))
-        
-        self.canvas.after(10, self.canvas.delete, line)
-        self.canvas.after(10, self.canvas.update)
+        text = self.canvas.create_text(xText, yText, font=("Arial", 16), text=str(numCars), fill="blue")
 
     def getCoordinatesFromLightIndex(self, lightIndex):
         if lightIndex == 0:
