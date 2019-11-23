@@ -49,9 +49,7 @@ class Environment:
         queueIdx = position[1]
         queue = light.queues[queueIdx]
 
-        initNumCars = light.getNumCars()
         queue.pushCar(car, time)
-        numCars = light.getNumCars()
 
     # TODO: create path through update for all_routes
     def addAllCars(self, time, allRoutes):
@@ -65,9 +63,11 @@ class Environment:
         numCarsToAdd = 0
 
         if highTraffic:
-            numCarsToAdd = random.randint(2, 3)
+            numCarsToAdd = random.randint(5, 9)
         else:
-            numCarsToAdd = random.randint(1, 2)
+            numCarsToAdd = random.randint(3, 4)
+
+        numCarsToAdd = min(self.MAX_CARS - self.getNumCars(), numCarsToAdd)
 
         for _ in range(numCarsToAdd):
             route = random.choice(allRoutes)[:]
@@ -105,7 +105,7 @@ class Environment:
         """
         return sum([light.getNumCars() for light in self.lights])
 
-    def mapEnvironmentToState(self, time):
+    def toState(self, time):
         """
             returns the state based on the environment
             [
@@ -127,7 +127,7 @@ class Environment:
         return state
 
     def getCost(self, time):
-        return sum(self.mapEnvironmentToState(time)[4:-1])
+        return sum(self.toState(time)[4:-1])
 
     def generateRoutes(self):
         """
@@ -137,14 +137,14 @@ class Environment:
         """
 
        #====================== Helper functions here ======================
-        def BFS(g, start_point, end_point):
+        def BFS(g, startPoint, endPoint):
             """
                 Breadth first search for directed graph with no weights
             """
             explored = []
-            queue = [[start_point]]
+            queue = [[startPoint]]
 
-            if start_point == end_point:
+            if startPoint == endPoint:
                 return []
 
             while queue:
@@ -154,26 +154,26 @@ class Environment:
                     neighbours = g[node]
                     # Expand to neighbours and check if we have a complete path
                     for neighbour in neighbours:
-                        new_path = list(path) + [neighbour]
-                        queue.append(new_path)
-                        if neighbour == end_point:
-                            return new_path
+                        newPath = list(path) + [neighbour]
+                        queue.append(newPath)
+                        if neighbour == endPoint:
+                            return newPath
 
                     explored.append(node)
 
             return []
 
-        all_routes = []
+        allRoutes = []
 
-        def get_exit_action(exit_point):
+        def getExitAction(exitPoint):
             """
                 Returns finaction a car should take to exit at the correct location
             """
-            if exit_point == 1 or exit_point == 2:
+            if exitPoint == 1 or exitPoint == 2:
                 return "n"
-            elif exit_point == 3 or exit_point == 4:
+            elif exitPoint == 3 or exitPoint == 4:
                 return "e"
-            elif exit_point == 5 or exit_point == 6:
+            elif exitPoint == 5 or exitPoint == 6:
                 return "s"
             else:
                 return "w"
@@ -216,29 +216,29 @@ class Environment:
         for start in set(graph.keys()):
             if type(start) is int: 
                 # Exclude start point and iterate through every possible end point
-                new_graph = {k: graph[k] for k in set(
+                newGraph = {k: graph[k] for k in set(
                     list(graph.keys())) - set([start])}
-                for end in set(new_graph.keys()):
+                for end in set(newGraph.keys()):
                     if type(end) is int:
                         route = BFS(graph, start, end)
-                        all_routes.append(route)
+                        allRoutes.append(route)
 
         # Currently a route has the form [start, (light, dir), ..., (light, dir), end]. We need to
         # modify the list so that each route has first element as tuple (starting light, direction) and
         # subsequent elements as actions.
         # e.g. [(0, 2), "s", "s"] ==> starting at NW light's queue facing south, go south, go south
         dirs = ENV_CONSTANTS["QUEUE_DIR"]
-        for idx, route in enumerate(all_routes):
-            new_route = []
-            start_light = route[1][0]  # Second element in route is a tuple, first element in tuple is light
-            start_dir = dirs[route[1][1]]  # Second element in tuple is queue direction
-            new_route.append((start_light, start_dir))  # Add on starting light and queue
+        for idx, route in enumerate(allRoutes):
+            newRoute = []
+            startLight = route[1][0]  # Second element in route is a tuple, first element in tuple is light
+            startDir = dirs[route[1][1]]  # Second element in tuple is queue direction
+            newRoute.append((startLight, startDir))  # Add on starting light and queue
             for queue in route[2:-1]:
-                new_route.append(queue[1])  # Add on action
-            new_route.append(get_exit_action(route[-1]))
-            all_routes[idx] = new_route
+                newRoute.append(queue[1])  # Add on action
+            newRoute.append(getExitAction(route[-1]))
+            allRoutes[idx] = newRoute
 
-        return all_routes
+        return allRoutes
 
     def __str__(self):
         NW  = ENV_CONSTANTS["LIGHT_POSITIONS"]["NW"]

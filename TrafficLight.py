@@ -13,11 +13,17 @@ class TrafficLight:
         self.directionIsNorthSouth = False
         self.timeChanged = 0
         self.id = id
-        self.queues = [LightQueue(0), LightQueue(
-            1), LightQueue(2), LightQueue(3)]
+        self.queues = self.__init_queues()
         # LIGHT NOTATION: 0 = northern neighbour, 1 = east neighbour, 2 = south neighbour, 3 = west neighbour
         self.neighbours = [None, None, None, None]
     
+    def __init_queues(self):
+        queues = []
+        for direction in LIGHT_CONSTANTS["ACTION_DIR"]:
+            id = LIGHT_CONSTANTS["ACTION_DIR"][direction]
+            queues.append(LightQueue(id))
+        return queues
+
     def changeLight(self, time):
         ''' Toggle light direction and set time '''
         self.directionIsNorthSouth = not self.directionIsNorthSouth
@@ -33,9 +39,9 @@ class TrafficLight:
         def __bin(wait_time):
             # Bin the total wait time
             # Update size of Q table if number of bins changes
-            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["medium_wait"]:
+            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["med_upper"]:
                 return 2
-            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_wait"]:
+            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_upper"]:
                 return 1
             else:
                 return 0
@@ -69,6 +75,7 @@ class TrafficLight:
             queues = [self.queues[1], self.queues[3]]
 
         for queue in self.queues:
+            # Delay > 0 => that the car is in motion to the light queue. 
             map(__subtract,queue.cars)
         for queue in queues:
             if queue.getNumCars():
@@ -92,7 +99,6 @@ class TrafficLight:
                         car.route.pop(0)
                         car.canClear = False
                         car.delay = car.MAX_DELAY
-                        lightToPush = self.neighbours[direction]
                         self.pushCarToNextLight(car, nextCarAction, time)
 
     def addNeighbour(self, direction, light):
