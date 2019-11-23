@@ -39,6 +39,12 @@ class LightQueue:
     def getNumCars(self):
         return len(self.cars)
 
+    def getNumCarsDriving(self):
+        return len([car for car in self.cars if car.delay])
+
+    def getNumCarsWaiting(self):
+        return len([car for car in self.cars if not car.delay])
+
     def getWaitTimes(self, time):
         # The delay attribute in the car class represents how far away it is from 
         # starting it's "wait" in the queue. This is like saying the car isn't

@@ -27,6 +27,9 @@ class TrafficLight:
     def getNumCars(self):
         return sum([queue.getNumCars() for queue in self.queues])
 
+    def getNumCarsWaiting(self):
+        return sum([queue.getNumCarsWaiting() for queue in self.queues])
+
     def getWaitTimes(self, time):
         def __bin(wait_time):
             # Bin the total wait time
@@ -64,7 +67,9 @@ class TrafficLight:
             queues = [self.queues[0], self.queues[2]]
         else:
             queues = [self.queues[1], self.queues[3]]
-        for car in self.queues.cars:
+
+        for queue in self.queues:
+            for car in queue.cars:
                 car.delay = max(0,car.delay-1)
         for queue in queues:
             if queue.getNumCars():
