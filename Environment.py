@@ -18,6 +18,7 @@ class Environment:
         self.currentTime = time
         self.lights = self.__init_lights()
         self.MAX_CARS = ENV_CONSTANTS["MAX_CARS"]
+        self.lightChangeCost = -1
 
     def __init_lights(self):
         lights = [None,None,None,None]
@@ -57,21 +58,20 @@ class Environment:
             Probabilistically determines how many cars should be added at a given
             time step
         """
-        
 
         highTraffic = any(t[0] <= time <= t[1] for t in ENV_CONSTANTS["RUSH_HOUR_TIMES"])
         numCarsToAdd = 0
 
         if highTraffic:
-            numCarsToAdd = random.randint(5, 9)
+            numCarsToAdd = random.randint(0, 1)
         else:
-            numCarsToAdd = random.randint(3, 4)
+            numCarsToAdd = random.randint(0, 1)
 
         numCarsToAdd = min(self.MAX_CARS - self.getNumCars(), numCarsToAdd)
 
         for _ in range(numCarsToAdd):
             route = random.choice(allRoutes)[:]
-            print("A car's route is ",route)
+            #print("A car's route is ",route)
             newCar = Car(route, startTime=time)
             self.addCarToQueue(newCar, time)
 
@@ -126,8 +126,18 @@ class Environment:
         state.append(timeOfDay)
         return state
 
+
     def getCost(self, time):
-        return sum(self.toState(time)[4:-1])
+        cost = 0
+        costMap = {
+            0: 1,
+            1: 4,
+            2: 12
+        }
+        for wait in self.toState(time)[4:-1]:
+            cost += costMap[wait]
+
+        return cost
 
     def generateRoutes(self):
         """

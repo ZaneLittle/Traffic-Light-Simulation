@@ -26,6 +26,7 @@ class TrafficLight:
 
     def changeLight(self, time):
         ''' Toggle light direction and set time '''
+        #print("CHANGED LIGHT")
         self.directionIsNorthSouth = not self.directionIsNorthSouth
         self.timeChanged = time
 

@@ -11,7 +11,7 @@ LIGHT_CONSTANTS = {
     }                        # large wait > 5
 }
 
-EPISODE_LEN = 100
+EPISODE_LEN = 50000
 NUM_INTERVALS = 5
 
 boundaryOne     = EPISODE_LEN//NUM_INTERVALS
@@ -29,7 +29,7 @@ ENV_CONSTANTS = {
         "SW": 3
     },
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
-    "MAX_CARS": 50,
+    "MAX_CARS": 500,
     "RUSH_HOUR_TIMES":  [(boundaryOne,boundaryTwo-1),(boundaryThree,boundaryFour-1)],
     "TIME_INTERVALS": [(0,boundaryOne-1),(boundaryOne,boundaryTwo-1),(boundaryTwo,boundaryThree-1),(boundaryThree,boundaryFour-1),(boundaryFour,EPISODE_LEN-1)]
     
