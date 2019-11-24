@@ -24,11 +24,9 @@ def plot(rewardHistory, carsHistory):
     plt.xticks(tickSpacing,labels=["Day {}".format(day+1) for day in range(ENV_CONSTANTS["NUM_DAYS"])],rotation=45)
     plt.show()
 
-
-if __name__ == "__main__":
-    environment = Environment(0)
-    agent = Agent(environment)
-    # Create all possible routes
+def runSimulation(agent,environment):
+    routes = environment.generateRoutes()
+     # Create all possible routes
     routes = environment.generateRoutes()
     # Rush hour from traffic Lights 
     routesFromTop = []  # Routes starting from light 0 or light 1
@@ -45,16 +43,25 @@ if __name__ == "__main__":
     #========================================================================#
     rewardHistory = []
     carsHistory = []
+    encounteredStates = []
+    numStatesEncountered = 0
     for day in range(ENV_CONSTANTS["NUM_DAYS"]):
         dayHistory =[]
         for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
+            time = time+(day*ENV_CONSTANTS["EPISODE_LENGTH"])
             environment.update(time,routes)
             dayHistory.append(agent.update(time, environment))
             carsHistory.append(environment.getNumCars())
         rewardHistory += dayHistory
         dayHistory = np.array(dayHistory)
-        print("Finished day {}, avg cost: {}".format(day+1,np.mean(dayHistory)))
-
+        currentState = int(''.join(map(str, environment.toState())))
+        print("Finished day {}, avg cost: {}, \% states encountered".format(day+1,np.mean(dayHistory), percentStates))
     plot(rewardHistory, carsHistory)
+
+
+if __name__ == "__main__":
+    environment = Environment(0)
+    agent = Agent(environment)
+    runSimulation(agent,environment)
     
 

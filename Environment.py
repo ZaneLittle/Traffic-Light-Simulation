@@ -2,7 +2,7 @@ import random
 from LightQueue import LightQueue
 from Car import Car
 from TrafficLight import TrafficLight
-from config import ENV_CONSTANTS
+from config import ENV_CONSTANTS, LIGHT_CONSTANTS
 
 class Environment:
     '''
@@ -66,10 +66,11 @@ class Environment:
         highTraffic = self.__highTraffic(time)
         numCarsToAdd = 0
 
-        if highTraffic:
-            numCarsToAdd = random.randint(1, 2)
-        else:
-            numCarsToAdd = random.randint(0, 1)
+        # if highTraffic:
+        #     numCarsToAdd = 5 #random.randint(100, 101)50
+        # else:
+        #     numCarsToAdd = random.randint(0, 1)
+        numCarsToAdd = random.randint(0,5)
 
         numCarsToAdd = min(self.MAX_CARS - self.getNumCars(), numCarsToAdd)
 
@@ -119,9 +120,26 @@ class Environment:
             ]
         """
         state = [1 if light.directionIsNorthSouth else 0 for light in self.lights]
+        n   = ENV_CONSTANTS["QUEUE_DIR"]["n"]
+        e   = ENV_CONSTANTS["QUEUE_DIR"]["e"]
+        s   = ENV_CONSTANTS["QUEUE_DIR"]["s"]
+        w   = ENV_CONSTANTS["QUEUE_DIR"]["w"]
         for light in self.lights:
-            NSTotalTime, EWTotalTime = light.getWaitTimes(time)
-            state += [NSTotalTime, EWTotalTime]
+            northQueue = light.queues[n]
+            southQueue = light.queues[s]
+            eastQueue = light.queues[e]
+            westQueue = light.queues[w]
+            queueLens = [northQueue.getNumCarsWaiting()+southQueue.getNumCarsWaiting(),eastQueue.getNumCarsWaiting()+westQueue.getNumCarsWaiting()]
+            for numCars in queueLens:
+                if numCars > LIGHT_CONSTANTS["NUM_CARS_BINS"]["large"](self.getNumCars()):
+                    state.append(3)
+                elif numCars > LIGHT_CONSTANTS["NUM_CARS_BINS"]["medium"](self.getNumCars()):
+                    state.append(2)
+                else:
+                    state.append(1)
+        # for light in self.lights:
+        #     NSTotalTime, EWTotalTime = light.getWaitTimes(time)
+        #     state += [NSTotalTime, EWTotalTime]
         timeOfDay = 0
         for ind,timeTup in enumerate(ENV_CONSTANTS["TIME_INTERVALS"]):
             if timeTup[0] <= time <= timeTup[1]:
@@ -133,14 +151,11 @@ class Environment:
 
     def getCost(self, time):
         cost = 0
-        costMap = {
-            0: 1,
-            1: 4,
-            2: 12
-        }
-        for wait in self.toState(time)[4:-1]:
-            cost += costMap[wait]
-
+        for light in self.lights:
+            NSTotalTime, EWTotalTime = light.getWaitTimes(time)
+            assert(NSTotalTime >= 0)
+            assert(EWTotalTime >= 0)
+            cost += NSTotalTime+EWTotalTime
         return cost
 
     def generateRoutes(self):

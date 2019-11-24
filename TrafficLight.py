@@ -36,19 +36,21 @@ class TrafficLight:
         return sum([queue.getNumCarsWaiting() for queue in self.queues])
 
     def getWaitTimes(self, time):
-        def __bin(wait_time):
-            # Bin the total wait time
-            # Update size of Q table if number of bins changes
-            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["med_upper"]:
-                return 2
-            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_upper"]:
-                return 1
-            else:
-                return 0
-        NS = __bin(sum(self.queues[0].getWaitTimes(
-            time) + self.queues[2].getWaitTimes(time)))
-        EW = __bin(sum(self.queues[1].getWaitTimes(
-            time) + self.queues[3].getWaitTimes(time)))
+        # def __bin(wait_time):
+        #     # Bin the total wait time
+        #     # Update size of Q table if number of bins changes
+        #     if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["med_upper"]:
+        #         return 2
+        #     elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_upper"]:
+        #         return 1
+        #     else:
+        #         return 0
+        # NS = __bin(sum(self.queues[0].getWaitTimes(
+        #     time) + self.queues[2].getWaitTimes(time)))
+        # EW = __bin(sum(self.queues[1].getWaitTimes(
+        #     time) + self.queues[3].getWaitTimes(time)))
+        NS = self.queues[0].getWaitTimes(time) + self.queues[2].getWaitTimes(time)
+        EW = self.queues[1].getWaitTimes(time) + self.queues[3].getWaitTimes(time)
         return NS, EW
 
     def pushCarToNextLight(self, car, action, time):

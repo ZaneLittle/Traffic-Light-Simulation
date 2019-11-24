@@ -3,6 +3,7 @@ from tkinter import *
 import time as tm
 from config import ENV_CONSTANTS
 from Agent import Agent
+import Main as sim
 from Environment import Environment
 
 class Visualizer:
@@ -19,12 +20,22 @@ class Visualizer:
         self.agent = Agent(self.environment)
 
     def runSimulation(self):
-        routes = self.environment.generateRoutes()    
-        for time in range(100):
-            self.environment.update(time, routes)
-            self.agent.update(time, self.environment)
-            self.updateFrame(time)
-            tm.sleep(0.3)
+        routes = self.environment.generateRoutes()
+        # Create all possible routes
+        routes = self.environment.generateRoutes()
+        #========================================================================#
+        #                       ~   START SIMULATION   ~                         #
+        #========================================================================#
+        for day in range(ENV_CONSTANTS["NUM_DAYS"]):
+            dayHistory =[]
+            for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
+                self.environment.update(time,routes)
+                self.agent.update(time, self.environment)
+                self.updateFrame(time)
+                tm.sleep(0.01)
+            dayHistory = np.array(dayHistory)
+            print("Finished day {}, avg cost: {}".format(day+1,np.mean(dayHistory)))
+            
 
     def updateFrame(self, time):
         self.canvas.delete("all")
