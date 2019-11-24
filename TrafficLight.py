@@ -45,10 +45,8 @@ class TrafficLight:
                 return 1
             else:
                 return 0
-        NS = __bin(sum(self.queues[0].getWaitTimes(
-            time) + self.queues[2].getWaitTimes(time)))
-        EW = __bin(sum(self.queues[1].getWaitTimes(
-            time) + self.queues[3].getWaitTimes(time)))
+        NS = __bin(self.queues[0].getWaitTimes(time) + self.queues[2].getWaitTimes(time))
+        EW = __bin(self.queues[1].getWaitTimes(time) + self.queues[3].getWaitTimes(time))
         return NS, EW
 
     def pushCarToNextLight(self, car, action, time):

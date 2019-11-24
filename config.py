@@ -6,12 +6,12 @@ LIGHT_CONSTANTS = {
         "w": 3
     },
     "TIME_BINS": {
-        "small_upper": 2,    # 0 < small wait <= 2
-        "med_upper": 5       # 2 < medium wait <= 5                       
+        "small_upper": 15,    # 0 < small wait <= 2
+        "med_upper": 30      # 2 < medium wait <= 5                       
     }                        # large wait > 5
 }
 
-NUM_DAYS = 30
+NUM_DAYS = 1000
 EPISODE_LEN = 600 # Number of minutes in a 10 hour day (so morning, rush hour, work day, and then night rush hour)
 NUM_INTERVALS = 5
 

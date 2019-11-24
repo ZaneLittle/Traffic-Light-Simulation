@@ -24,7 +24,7 @@ class Visualizer:
             self.environment.update(time, routes)
             self.agent.update(time, self.environment)
             self.updateFrame(time)
-            tm.sleep(0.3)
+            tm.sleep(0.1)
 
     def updateFrame(self, time):
         self.canvas.delete("all")

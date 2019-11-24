@@ -132,16 +132,7 @@ class Environment:
 
 
     def getCost(self, time):
-        cost = 0
-        costMap = {
-            0: 1,
-            1: 4,
-            2: 12
-        }
-        for wait in self.toState(time)[4:-1]:
-            cost += costMap[wait]
-
-        return cost
+        return sum(self.toState(time)[4:-1])
 
     def generateRoutes(self):
         """

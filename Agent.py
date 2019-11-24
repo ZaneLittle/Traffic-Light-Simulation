@@ -22,7 +22,9 @@ class Agent:
         self.epsilon = epsilon
         self.lr = lr
         self.environment = environment
-        self.numStates = (2**lights)*(discreteCosts**(2**(lights)))*numDayTime # Number of possible lights * traffic wait times * times of day
+        self.numStates = (2**lights)*(discreteCosts**(2*lights))*numDayTime # Number of possible lights * traffic wait times * times of day
+        self.numStates = 541280
+        print(self.numStates)
         self.numActions = numActions
         self.qTable = np.zeros((self.numStates, self.numActions))
         self.lightChangeCost = -1
@@ -118,7 +120,10 @@ class Agent:
             newState = env.toState(time)
             newStateQind = self.stateToQind(newState)
             qind = self.stateToQind(oldState)
-            greedyNext = np.max(self.qTable[newStateQind])
+            try:
+                greedyNext = np.max(self.qTable[newStateQind])
+            except:
+                print("Invalid state: {}, qInd: {}, maxQind: {}".format(newState,newStateQind,self.qTable.shape[0]))
             oldVal = self.qTable[qind][actionIndex]
 
             reward -= env.getCost(time)
