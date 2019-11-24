@@ -43,8 +43,7 @@ def runSimulation(agent,environment):
     #========================================================================#
     rewardHistory = []
     carsHistory = []
-    encounteredStates = []
-    numStatesEncountered = 0
+    encounteredStates = set()
     for day in range(ENV_CONSTANTS["NUM_DAYS"]):
         dayHistory =[]
         for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
@@ -52,10 +51,13 @@ def runSimulation(agent,environment):
             environment.update(time,routes)
             dayHistory.append(agent.update(time, environment))
             carsHistory.append(environment.getNumCars())
+            currentState = int(''.join(map(str, environment.toState(time))))
+            encounteredStates.add(currentState)
         rewardHistory += dayHistory
         dayHistory = np.array(dayHistory)
-        currentState = int(''.join(map(str, environment.toState())))
-        print("Finished day {}, avg cost: {}, \% states encountered".format(day+1,np.mean(dayHistory), percentStates))
+       
+        percentStates = 100*len(encounteredStates)/len(agent.qTable)
+        print("Finished day {}, avg cost: {}, {}% states encountered".format(day+1,np.mean(dayHistory), percentStates))
     plot(rewardHistory, carsHistory)
 
 
