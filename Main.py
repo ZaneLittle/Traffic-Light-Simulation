@@ -1,18 +1,27 @@
 from Environment import Environment
 from Agent import Agent
+import numpy as np
 from config import ENV_CONSTANTS
+import math
 import matplotlib.pyplot as plt
 
 def plot(rewardHistory, carsHistory):
+    tickSpacing = [ENV_CONSTANTS["EPISODE_LENGTH"]*day for day in range(ENV_CONSTANTS["NUM_DAYS"])]
     plt.subplot(2, 1, 1)
+    rewardHistory = np.array(rewardHistory)*-1
     plt.plot(rewardHistory)
-    plt.ylabel('Average Reward')
+    plt.ylabel('Average Cost')
+    plt.xticks(tickSpacing)
+    plt.tick_params(
+    axis='x',          # changes apply to the x-axis
+    which='both',      # both major and minor ticks are affected
+    labelbottom=False) # labels along the bottom edge are off
 
     plt.subplot(2, 1, 2)
     plt.plot(carsHistory)
     plt.xlabel('time')
     plt.ylabel('Number of Cars')
-
+    plt.xticks(tickSpacing,labels=["Day {}".format(day+1) for day in range(ENV_CONSTANTS["NUM_DAYS"])],rotation=45)
     plt.show()
 
 
@@ -36,19 +45,16 @@ if __name__ == "__main__":
     #========================================================================#
     rewardHistory = []
     carsHistory = []
-    for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
-        #print("Time step: {}".format(time))
-        lightDirections = [
-            "north/south" if light.directionIsNorthSouth
-            else "east/west"
-            for light in environment.lights
-        ]
-        #print("Directions for traffic lights: {}".format(lightDirections))
-        environment.update(time,routes)
-        #print(str(environment))
-        #print("state: {}, cost: {}".format(environment.toState(time),environment.getCost(time)))
-        rewardHistory.append(agent.update(time, environment))
-        carsHistory.append(environment.getNumCars())
+    for day in range(ENV_CONSTANTS["NUM_DAYS"]):
+        dayHistory =[]
+        for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
+            environment.update(time,routes)
+            dayHistory.append(agent.update(time, environment))
+            carsHistory.append(environment.getNumCars())
+        rewardHistory += dayHistory
+        dayHistory = np.array(dayHistory)
+        print("Finished day {}, avg cost: {}".format(day+1,np.mean(dayHistory)))
+
     plot(rewardHistory, carsHistory)
     
 

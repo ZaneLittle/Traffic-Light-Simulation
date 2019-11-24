@@ -25,8 +25,14 @@ class Agent:
         self.numStates = (2**lights)*(discreteCosts**(2**(lights)))*numDayTime # Number of possible lights * traffic wait times * times of day
         self.numActions = numActions
         self.qTable = np.zeros((self.numStates, self.numActions))
+        self.lightChangeCost = -1
         self.actionMap = self.generateActionMap()
 
+        self.policy = [0.5, 0.5, 0.5, 0.5]
+        # Parameter used to alter how long the naive lights stay on for before switching direction
+        self.phaseTimeBound = 1
+        # Time elapses since lights have last changed direction
+        self.currentPhaseTime = 0
 
     def generateActionMap(self):
         lst = [0,0,0,0]
@@ -78,44 +84,61 @@ class Agent:
         else:
             policy = np.ones(self.numActions) * (self.epsilon / self.numActions)
             bestAction = np.argmax(self.qTable[qind])
-            policy[bestAction] += 1.0 - self.epsilon 
+            policy[bestAction] += 1.0 - self.epsilon
 
         return np.random.choice(np.arange(len(policy)), p=policy)    
 
+    def greedy_action(self,time,env=None):
+        state = env.toState(time)
+        qInd = self.stateToQind(state)
+        return np.max(self.qTable[qInd])
 
-    def update(self, time, env):
+    def update(self, time, env=None):
         ''' 
         Update for given time step 
         Return reward ratio based on number of cars in the environment
         '''
-        # Retrieve e-greedy action and take it
-        oldState = env.toState(time)
-        actionIndex = self.eGreedy(oldState)
-        action = self.actionMap[actionIndex]
-        reward = 0
-        for newLightDir, oldLightDir, i in zip(action, oldState[:4], range(0,4)): 
-            if not newLightDir is oldLightDir:
-                # print("toggling light {}".format(env.lights[i])) # debug
-                env.lights[i].changeLight(time) 
-                reward += env.lightChangeCost
-
-        # Get indices
-        newState = env.toState(time)
-        newStateQind = self.stateToQind(newState)
-        qind = self.stateToQind(oldState)
-        greedyNext = np.max(self.qTable[newStateQind])
-        oldVal = self.qTable[qind][actionIndex]
-
-        reward -= env.getCost(time)
-
-        # Update Q table
-        self.qTable[qind][actionIndex] = self.lr * (reward + self.discount * greedyNext - oldVal)
-        
-        
-        numCars = env.getNumCars()
-        # print("time: {} \t reward: {} \t num cars: {}".format(time, reward, numCars)) # debug
-            
-        if numCars:
-            return reward/numCars
+        self.currentPhaseTime = self.currentPhaseTime + 1
+        # For now, test with a naive, constant policy of light changing
+        if not env:
+            self.constantPolicy(time) 
+            return None
         else:
-            return 0
+            # Retrieve e-greedy action and take it
+            oldState = env.toState(time)
+            actionIndex = self.eGreedy(oldState)
+            action = self.actionMap[actionIndex]
+            reward = 0
+            for newLightDir, oldLightDir, i in zip(action, oldState[:4], range(0,4)): 
+                if not newLightDir is oldLightDir:
+                    env.lights[i].changeLight(time) 
+                    reward += self.lightChangeCost
+    
+            # Get indices
+            newState = env.toState(time)
+            newStateQind = self.stateToQind(newState)
+            qind = self.stateToQind(oldState)
+            greedyNext = np.max(self.qTable[newStateQind])
+            oldVal = self.qTable[qind][actionIndex]
+
+            reward -= env.getCost(time)
+
+            # Update Q table
+            self.qTable[qind][actionIndex] = self.lr * (reward + self.discount * greedyNext - oldVal)
+            
+            
+            numCars = env.getNumCars()
+            # print("time: {} \t reward: {} \t num cars: {}".format(time, reward, numCars))
+             
+            if numCars:
+                return reward/numCars
+            else:
+                return 0
+
+    def constantPolicy(self, time):
+        # If enough time has elapsed, change light direction
+        if self.currentPhaseTime >= self.phaseTimeBound:
+            self.currentPhaseTime = 0
+            for light in self.environment.lights:
+                # Toggle light direction
+                light.changeLight(time)

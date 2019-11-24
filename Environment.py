@@ -19,6 +19,7 @@ class Environment:
         self.lights = self.__init_lights()
         self.MAX_CARS = ENV_CONSTANTS["MAX_CARS"]
         self.lightChangeCost = -1
+        self.isRushHour = self.__highTraffic(time)
 
     def __init_lights(self):
         lights = [None,None,None,None]
@@ -52,6 +53,9 @@ class Environment:
 
         queue.pushCar(car, time)
 
+    def __highTraffic(self,time):
+        return any(t[0] <= time <= t[1] for t in ENV_CONSTANTS["RUSH_HOUR_TIMES"])
+
     # TODO: create path through update for all_routes
     def addAllCars(self, time, allRoutes):
         """
@@ -59,19 +63,18 @@ class Environment:
             time step
         """
 
-        highTraffic = any(t[0] <= time <= t[1] for t in ENV_CONSTANTS["RUSH_HOUR_TIMES"])
+        highTraffic = self.__highTraffic(time)
         numCarsToAdd = 0
 
         if highTraffic:
-            numCarsToAdd = random.randint(2, 3)
-        else:
             numCarsToAdd = random.randint(1, 2)
+        else:
+            numCarsToAdd = random.randint(0, 1)
 
         numCarsToAdd = min(self.MAX_CARS - self.getNumCars(), numCarsToAdd)
 
         for _ in range(numCarsToAdd):
             route = random.choice(allRoutes)[:]
-            #print("A car's route is ",route)
             newCar = Car(route, startTime=time)
             self.addCarToQueue(newCar, time)
 
@@ -98,6 +101,7 @@ class Environment:
         for light in self.lights:
             light.updateQueues(time)
         self.currentTime = time
+        self.isRushHour = self.__highTraffic(time)
 
     def getNumCars(self):
         """

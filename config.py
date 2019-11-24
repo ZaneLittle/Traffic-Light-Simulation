@@ -11,7 +11,8 @@ LIGHT_CONSTANTS = {
     }                        # large wait > 5
 }
 
-EPISODE_LEN = 10000
+NUM_DAYS = 30
+EPISODE_LEN = 600 # Number of minutes in a 10 hour day (so morning, rush hour, work day, and then night rush hour)
 NUM_INTERVALS = 5
 
 boundaryOne     = EPISODE_LEN//NUM_INTERVALS
@@ -20,6 +21,7 @@ boundaryThree   = (EPISODE_LEN//NUM_INTERVALS)*3
 boundaryFour    = (EPISODE_LEN//NUM_INTERVALS)*4
 
 ENV_CONSTANTS = {
+    "NUM_DAYS": NUM_DAYS,
     "EPISODE_LENGTH": EPISODE_LEN,
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS":{
