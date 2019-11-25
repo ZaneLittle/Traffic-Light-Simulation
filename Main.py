@@ -1,7 +1,7 @@
 from Environment import Environment
 from Agent import Agent
 import numpy as np
-from config import ENV_CONSTANTS
+from config import ENV_CONSTANTS, CAR_CONSTS
 import json
 import os
 import math
@@ -49,7 +49,7 @@ def plotDays(rewardHistory,carsHistory, avgDailyWaitTimes):
 
     plt.subplot(3, 1, 3)
     plt.plot(avgDailyWaitTimes)
-    plt.ylabel('Travel Time')
+    plt.ylabel('CO2 (kg) per Car')
    
     ymin, ymax = ax.get_ylim()
     plt.xlabel('Day (600 timesteps each)')
@@ -61,7 +61,8 @@ def plotTravelTimes(avgDailyWaitTimes):
     plt.xlabel('Day')
     plt.show()
 
-
+def scaleCO2(travelTimes):
+    return [x * CAR_CONSTS["CO2_PER_TICK"] for x in travelTimes]
 
 def runSimulation(environment,agent,resetOnDay=True):
     routes = environment.generateRoutes()
@@ -108,7 +109,7 @@ def runSimulation(environment,agent,resetOnDay=True):
         percVisited = (len(stateTracker)/agent.numStates)*100
         print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
         # print("\t-> travel times: {}".format(avgTravelTimes))
-    return rewardHistory, carsHistory, avgTravelTimes
+    return rewardHistory, carsHistory, scaleCO2(avgTravelTimes)
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):

@@ -38,10 +38,13 @@ ENV_CONSTANTS = {
         (boundaryTwo, boundaryThree - 1),
         (boundaryThree, boundaryFour - 1),
         (boundaryFour, EPISODE_LEN - 1),
-    ],
+    ]
 }
 
-CAR_CONSTS = {"MAX_DELAY": 2}
+CAR_CONSTS = {
+    "MAX_DELAY": 2,
+    "CO2_PER_TICK": 0.208 # kg - based on average speed of 50km/h and average CO2 output of 250 g/km
+}
 
 
 # Used to determine the size of the state by considering each variable that makes up the state
