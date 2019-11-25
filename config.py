@@ -21,8 +21,8 @@ boundaryThree = (EPISODE_LEN // NUM_INTERVALS) * 3
 boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
 ENV_CONSTANTS = {
-    "NUM_YEARS": 50,
-    "NUM_DAYS": 7,
+    "NUM_YEARS": 1,
+    "NUM_DAYS": 365,
     "EPISODE_LENGTH": EPISODE_LEN,
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS": {"NW": 0, "NE": 1, "SE": 2, "SW": 3},
@@ -42,7 +42,7 @@ ENV_CONSTANTS = {
 }
 
 CAR_CONSTS = {
-    "MAX_DELAY": 2,
+    "MAX_DELAY": 3,
     "CO2_PER_TICK": 0.208 # kg - based on average speed of 50km/h and average CO2 output of 250 g/km
 }
 

@@ -1,3 +1,4 @@
+from config import CAR_CONSTS 
 
 class Car:
     '''
@@ -7,12 +8,12 @@ class Car:
         route is represented as follows: ['n', 's', 'e', 'w']
     '''
 
-    def __init__(self, route, startTime=None, MAX_DELAY=2):
+    def __init__(self, route, startTime=None):
         #self.startLocation = route.pop(0)
         self.position = route[0]
-        self.MAX_DELAY = MAX_DELAY
+        self.MAX_DELAY = CAR_CONSTS["MAX_DELAY"]
         self.route = route
         self.startTime = startTime
-        self.delay = 0
+        self.delay = CAR_CONSTS["MAX_DELAY"]
         self.canClear = True
         self.enteredEnvironment = startTime

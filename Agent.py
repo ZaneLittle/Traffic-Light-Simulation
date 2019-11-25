@@ -77,17 +77,24 @@ class Agent:
 
         return np.random.choice(np.arange(len(policy)), p=policy)    
 
-    def greedy_action(self,state):
-        actions = self.qVal(state)
-        return np.max(actions)
+    def greedyAction(self,state):
+        """
+            state is defined in Environment.toState()
 
-    def updateLights(self,time):
+            Returns (column in the QTable with the highest value, that value)
+        """
+        actions = self.qVal(state)
+        return np.argmax(actions), np.max(actions)
+
+    def updateLights(self,time,greedy=False):
         """ 
             Update lights based on policy
             returns the "column" in the qtable that we updated
         """
         state = self.environment.toState(time)
         actionIndex = self.eGreedy(state)
+        if greedy:
+            actionIndex, _ = self.greedyAction(state)
         action = self.actionMap[actionIndex]
         for newLightDir, oldLightDir, i in zip(action, state[:4], range(0,4)): 
             if not newLightDir == oldLightDir:
@@ -102,7 +109,7 @@ class Agent:
             if oldDirection != newDirection:
                 r = reward
                 reward+=self.lightChangeCost
-        greedyNext = self.greedy_action(newState)
+        _ , greedyNext = self.greedyAction(newState)
         oldVal = self.qVal(previousState)[action]
         update = oldVal + self.lr * (reward + self.discount * greedyNext - oldVal)
         # assert(update <= 0),"update: {}, oldVal: {}, greedyNext: {}, reward: {}, wait time delta: {}".format(update,oldVal,greedyNext,reward,waitTimeDelta)

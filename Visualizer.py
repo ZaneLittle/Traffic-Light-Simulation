@@ -4,6 +4,7 @@ from Main import plot,plotDays
 from config import ENV_CONSTANTS,LIGHT_CONSTANTS
 from Agent import Agent
 import json
+import numpy as np
 from Environment import Environment
 
 class Visualizer:
@@ -46,7 +47,7 @@ class Visualizer:
                 self.updateFrame(time)
                 tm.sleep(0.3)
                 state = self.environment.toState(time)
-                action = self.agent.updateLights(time)
+                action = self.agent.updateLights(time,greedy=True)
                 waitTimes = self.environment.update(time,routes)
 
                 stateTracker.add(str(state))

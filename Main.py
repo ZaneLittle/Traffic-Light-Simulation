@@ -57,8 +57,8 @@ def plotDays(rewardHistory,carsHistory, avgDailyWaitTimes):
 
 def plotCulminativeCO2(culminativeCO2):
     plt.plot(culminativeCO2)
-    plt.title('Culminative CO2')
-    plt.ylabel('Average CO2')
+    plt.title('Culminative CO2 (kg)')
+    plt.ylabel('CO2 Emitted (kg)')
     plt.xlabel('Day')
     plt.show()
 
@@ -75,6 +75,7 @@ def runSimulation(environment,agent,resetOnDay=True):
     rewardHistory = []
     carsHistory = []
     avgTravelTimes = [] # average travel times by separated day
+    print("Starting simulation. Num epochs {}".format(ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]))
     for year in range(ENV_CONSTANTS["NUM_YEARS"]):
         yearHistory = []
         for day in range(ENV_CONSTANTS["NUM_DAYS"]):
