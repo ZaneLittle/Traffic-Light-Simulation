@@ -49,20 +49,21 @@ def plotDays(rewardHistory,carsHistory, avgDailyWaitTimes):
 
     plt.subplot(3, 1, 3)
     plt.plot(avgDailyWaitTimes)
-    plt.ylabel('CO2 (kg) per Car')
+    plt.ylabel('Travel Time')
    
     ymin, ymax = ax.get_ylim()
     plt.xlabel('Day (600 timesteps each)')
     plt.show()
 
-def plotTravelTimes(avgDailyWaitTimes):
-    plt.plot(avgDailyWaitTimes)
-    plt.ylabel('Average Travel Time')
+def plotCulminativeCO2(culminativeCO2):
+    plt.plot(culminativeCO2)
+    plt.title('Culminative CO2')
+    plt.ylabel('Average CO2')
     plt.xlabel('Day')
     plt.show()
 
-def scaleCO2(travelTimes):
-    return [x * CAR_CONSTS["CO2_PER_TICK"] for x in travelTimes]
+def culminativeCO2(travelTimes):
+    return np.cumsum([x * CAR_CONSTS["CO2_PER_TICK"] for x in travelTimes])
 
 def runSimulation(environment,agent,resetOnDay=True):
     routes = environment.generateRoutes()
@@ -109,7 +110,7 @@ def runSimulation(environment,agent,resetOnDay=True):
         percVisited = (len(stateTracker)/agent.numStates)*100
         print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
         # print("\t-> travel times: {}".format(avgTravelTimes))
-    return rewardHistory, carsHistory, scaleCO2(avgTravelTimes)
+    return rewardHistory, carsHistory, avgTravelTimes
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -138,7 +139,8 @@ if __name__ == "__main__":
     agent = Agent(environment)
     rewardHistory, carsHistory, avgDailyWaitTimes = runSimulation(environment,agent,True)
     plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
-    saveQTable(agent.qTable,"50YearQTable")
+    plotCulminativeCO2(culminativeCO2(avgDailyWaitTimes))
+    # saveQTable(agent.qTable,"50YearQTable")
     
 
 
