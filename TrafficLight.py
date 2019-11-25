@@ -36,13 +36,13 @@ class TrafficLight:
     def getNumCarsWaiting(self):
         return sum([queue.getNumCarsWaiting() for queue in self.queues])
 
-    def getWaitTimes(self, time):
+    def getWaitTimes(self, time, totalWaitTime):
         def __bin(wait_time):
             # Bin the total wait time
             # Update size of Q table if number of bins changes
-            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["large"]["lowerBound"]:
+            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["large"]["lowerBound"](totalWaitTime):
                 return LIGHT_CONSTANTS["TIME_BINS"]["large"]["penalty"]
-            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["medium"]["lowerBound"]:
+            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["medium"]["lowerBound"](totalWaitTime):
                 return LIGHT_CONSTANTS["TIME_BINS"]["medium"]["penalty"]
             else:
                 return LIGHT_CONSTANTS["TIME_BINS"]["small"]["penalty"]

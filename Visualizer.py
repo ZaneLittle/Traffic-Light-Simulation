@@ -1,4 +1,3 @@
-from pylab import *
 from tkinter import *
 import time as tm
 from Main import plot,plotDays
@@ -73,7 +72,7 @@ class Visualizer:
 
     def createTrafficLight(self,light, lightId):
         xCenter, yCenter = self.drawTrafficLight(light, lightId)
-        nsTimes, ewTimes = light.getWaitTimes(self.time)
+        nsTimes, ewTimes = light.getWaitTimes(self.time, sum(self.environment.getCarWaits(self.time)))
         for queueIndex, queue in enumerate(light.queues):
             howBad = "green"
             if queueIndex in [LIGHT_CONSTANTS["ACTION_DIR"]["n"],LIGHT_CONSTANTS["ACTION_DIR"]["s"]]:
@@ -128,6 +127,8 @@ class Visualizer:
         self.drawCars(numCars, queueCenterX, queueCenterY, queueIndex, lightId)
     
     def drawCars(self, numCars, endX, endY, queueIndex, lightId):
+        if not numCars:
+            return
         size = 100
         padding = 20
 
@@ -136,7 +137,6 @@ class Visualizer:
         y1 = None
         x2 = None
         y2 = None
-        arrowDirection = None
 
         xText = None
         yText = None

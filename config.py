@@ -7,8 +7,8 @@ LIGHT_CONSTANTS = {
     },
     "TIME_BINS": {
         "small": {"penalty": 2},
-        "medium": {"lowerBound": 30, "penalty": 25},
-        "large": {"lowerBound": 50, "penalty": 100},
+        "medium": {"lowerBound": lambda totalWait: totalWait/8, "penalty": 25},
+        "large": {"lowerBound": lambda totalWait: totalWait/4, "penalty": 100},
     },  # large wait > 5
 }
 

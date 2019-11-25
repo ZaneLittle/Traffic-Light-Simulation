@@ -113,7 +113,7 @@ class Environment:
         """
         state = [1 if light.directionIsNorthSouth else 0 for light in self.lights]
         for light in self.lights:
-            NSTotalTime, EWTotalTime = light.getWaitTimes(time)
+            NSTotalTime, EWTotalTime = light.getWaitTimes(time, sum(self.getCarWaits(time)))
             state += [NSTotalTime, EWTotalTime]
         timeOfDay = 0
         for ind,timeTup in enumerate(ENV_CONSTANTS["TIME_INTERVALS"]):
