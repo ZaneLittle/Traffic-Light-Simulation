@@ -1,8 +1,10 @@
 from pylab import *
 from tkinter import *
 import time as tm
+from Main import plot,plotDays
 from config import ENV_CONSTANTS,LIGHT_CONSTANTS
 from Agent import Agent
+import json
 from Environment import Environment
 
 class Visualizer:
@@ -17,6 +19,9 @@ class Visualizer:
         self.padding = 150
 
         self.agent = Agent(self.environment)
+        self.agent.qTable = {}
+        with open('qTables/50YearQTable.json') as qTable:
+            self.agent.qTable = json.load(qTable)
 
     def runSimulation(self):
         routes = self.environment.generateRoutes()
@@ -29,9 +34,6 @@ class Visualizer:
         carsHistory = []
         for day in range(ENV_CONSTANTS["NUM_DAYS"]):
             dayHistory =[]
-            self.environment = Environment(0)
-            self.agent.environment = self.environment
-            previousReward = 0
             for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
                 """
                 Steps 
@@ -41,14 +43,13 @@ class Visualizer:
                     4) update q table for old state using new reward.
 
                 """
-                self.time = time
+                self.time = time + (day*ENV_CONSTANTS["EPISODE_LENGTH"])
                 self.updateFrame(time)
-                tm.sleep(0.001)
+                tm.sleep(0.3)
                 state = self.environment.toState(time)
                 action = self.agent.updateLights(time)
                 waitTimes = self.environment.update(time,routes)
-                newState = self.environment.toState(time+1)
-                self.agent.updateQTable(state,newState,action,waitTimes)
+
                 stateTracker.add(str(state))
                 dayHistory.append(waitTimes)
                 carsHistory.append(self.environment.getNumCars())
@@ -219,6 +220,7 @@ class Visualizer:
         self.canvas.pack()
         return canvasSize
 
-gui = Visualizer()
-
-gui.runSimulation()
+if __name__ == "__main__":
+    gui = Visualizer()
+    rewardHistory, carsHistory = gui.runSimulation()
+    plot(rewardHistory,carsHistory)

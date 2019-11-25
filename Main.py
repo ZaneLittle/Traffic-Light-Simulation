@@ -116,7 +116,7 @@ if __name__ == "__main__":
     environment = Environment(0)
     agent = Agent(environment)
     rewardHistory, carsHistory = runSimulation(environment,agent,True)
-    saveQTable(agent.qTable,"10YearQTable")
+    saveQTable(agent.qTable,"50YearQTable")
     
 
 

@@ -1,4 +1,5 @@
 import random
+import json
 import numpy as np
 from itertools import permutations
 from config import STATE_COSTANTS
@@ -24,7 +25,6 @@ class Agent:
         self.environment = environment
         self.numStates = (2**lights)*(discreteCosts**(2*lights))*numDayTime # Number of possible lights * traffic wait times * times of day
         self.numActions = numActions
-        self.qTable = np.zeros((self.numStates, self.numActions))
         self.qTable = {}
         self.lightChangeCost = -1
         self.actionMap = self.generateActionMap()

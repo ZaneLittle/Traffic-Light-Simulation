@@ -21,13 +21,13 @@ boundaryThree = (EPISODE_LEN // NUM_INTERVALS) * 3
 boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
 ENV_CONSTANTS = {
-    "NUM_YEARS": 10,
-    "NUM_DAYS": 365,
+    "NUM_YEARS": 50,
+    "NUM_DAYS": 7,
     "EPISODE_LENGTH": EPISODE_LEN,
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS": {"NW": 0, "NE": 1, "SE": 2, "SW": 3},
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
-    "MAX_CARS": 20,
+    "MAX_CARS": 100,
     "RUSH_HOUR_TIMES": [
         (boundaryOne, boundaryTwo - 1),
         (boundaryThree, boundaryFour - 1),
