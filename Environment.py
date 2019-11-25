@@ -67,9 +67,9 @@ class Environment:
         numCarsToAdd = 0
 
         if highTraffic:
-            numCarsToAdd = random.randint(1, 2)
+            numCarsToAdd = random.randint(5, 10)
         else:
-            numCarsToAdd = random.randint(0, 1)
+            numCarsToAdd = random.randint(0, 4)
 
         numCarsToAdd = min(self.MAX_CARS - self.getNumCars(), numCarsToAdd)
 

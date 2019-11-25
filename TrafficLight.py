@@ -2,6 +2,7 @@ import math
 from LightQueue import LightQueue
 from Car import Car
 from config import LIGHT_CONSTANTS
+import random
 
 
 class TrafficLight:
@@ -10,7 +11,7 @@ class TrafficLight:
     '''
 
     def __init__(self, id):
-        self.directionIsNorthSouth = False
+        self.directionIsNorthSouth = bool(random.getrandbits(1))
         self.timeChanged = 0
         self.id = id
         self.queues = self.__init_queues()

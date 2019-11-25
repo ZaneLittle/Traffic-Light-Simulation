@@ -42,8 +42,11 @@ class LightQueue:
     def getNumCarsDriving(self):
         return len([car for car in self.cars if car.delay])
 
+    def carsWaiting(self):
+        return [car for car in self.cars if not car.delay]
+
     def getNumCarsWaiting(self):
-        return len([car for car in self.cars if not car.delay])
+        return len(self.carsWaiting())
 
     def getWaitTimes(self, time):
         # The delay attribute in the car class represents how far away it is from 
@@ -51,3 +54,4 @@ class LightQueue:
         # stationary if it's delay is >0 and we don't count it towards the agent's
         # cost.
         return sum([time - car.startTime for car in self.cars if car.delay == 0])
+

@@ -1,7 +1,7 @@
 from pylab import *
 from tkinter import *
 import time as tm
-from config import ENV_CONSTANTS
+from config import ENV_CONSTANTS,LIGHT_CONSTANTS
 from Agent import Agent
 from Environment import Environment
 
@@ -9,40 +9,76 @@ class Visualizer:
 
     def __init__(self):
         self.environment = Environment(0)
-
+        self.time = 0
         canvasSize = self.createCanvas()
         self.gui.update()
         self.gui.title("Traffic Light Simulation")
         self.lightOffset = 350
-        self.padding = 200
+        self.padding = 150
 
         self.agent = Agent(self.environment)
 
     def runSimulation(self):
-        routes = self.environment.generateRoutes()    
-        for time in range(100):
-            self.environment.update(time, routes)
-            self.agent.update(time, self.environment)
-            self.updateFrame(time)
-            tm.sleep(0.1)
+        routes = self.environment.generateRoutes()
+
+        #========================================================================#
+        #                       ~   START SIMULATION   ~                         #
+        #========================================================================#
+        stateTracker = set()
+        rewardHistory = []
+        carsHistory = []
+        for day in range(ENV_CONSTANTS["NUM_DAYS"]):
+            dayHistory =[]
+            self.environment = Environment(0)
+            self.agent.environment = self.environment
+            for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
+                self.time = time
+                self.updateFrame(time)
+                tm.sleep(0.001)
+                self.environment.update(time,routes)
+                state = self.environment.toState(time)
+                stateTracker.add(str(state))
+                dayHistory.append(self.agent.update(time, self.environment))
+                carsHistory.append(self.environment.getNumCars())
+            rewardHistory += dayHistory
+            dayHistory = np.array(dayHistory)
+            print("Finished day {},  \tavg cost: {:.4f}".format(day+1,np.mean(dayHistory)))
+            percVisited = (len(stateTracker)/self.agent.numStates)*100
+            print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
+        return rewardHistory, carsHistory
+           
 
     def updateFrame(self, time):
         self.canvas.delete("all")
         self.updateTrafficLights()
+        self.canvas.create_text(30, 30, font=("Arial", 16), text="Time: {}".format(time), fill="blue")
+
         self.gui.update()
 
     def updateTrafficLights(self):
-        for lightIndex, light in enumerate(self.environment.lights):
-            self.createTrafficLight(light, lightIndex)
+        for light in self.environment.lights:
+            self.createTrafficLight(light, light.id)
 
-    def createTrafficLight(self,light, lightIndex):
-        xCenter, yCenter = self.drawTrafficLight(light, lightIndex)
+    def createTrafficLight(self,light, lightId):
+        xCenter, yCenter = self.drawTrafficLight(light, lightId)
+        nsTimes, ewTimes = light.getWaitTimes(self.time)
         for queueIndex, queue in enumerate(light.queues):
-            self.createLightQueue(queue, queueIndex, lightIndex, xCenter, yCenter)
+            howBad = "green"
+            if queueIndex in [LIGHT_CONSTANTS["ACTION_DIR"]["n"],LIGHT_CONSTANTS["ACTION_DIR"]["s"]]:
+                if nsTimes == 100:
+                    howBad = "red"
+                elif nsTimes == 5:
+                    howBad = "orange" 
+            else:
+                if ewTimes == 100:
+                    howBad = "red"
+                elif ewTimes == 5:
+                    howBad = "orange"                      
+            self.createLightQueue(queue, queueIndex, lightId, xCenter, yCenter,fill=howBad)
 
-    def drawTrafficLight(self, light, lightIndex):
+    def drawTrafficLight(self, light, lightId):
         direction = light.directionIsNorthSouth
-        position = self.getCoordinatesFromLightIndex(lightIndex)
+        position = self.getCoordinatesFromlightId(lightId)
         length = 60
 
         xLeft = position[0] * self.lightOffset + self.padding
@@ -56,28 +92,30 @@ class Visualizer:
             self.canvas.create_line(xCenter, yTop, xCenter, yBottom, arrow=BOTH, width=4, arrowshape=(8,12,8))
         else: # E/W
             self.canvas.create_line(xLeft, yCenter, xRight, yCenter, arrow=BOTH, width=4, arrowshape=(8,12,8))
+        self.canvas.create_text(xCenter+30,yCenter+30, font=("Arial", 16), text=str(light.id))
 
         return xCenter, yCenter
 
-    def createLightQueue(self, queue, queueIndex, lightIndex, lightCenterX, lightCenterY):
-        queueCenterX, queueCenterY = self.drawLightQueue(queue, queueIndex, lightCenterX, lightCenterY)
-        # if queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["n"] and lightIndex == ENV_CONSTANTS["LIGHT_POSITIONS"]["SE"]:
+    def createLightQueue(self, queue, queueIndex, lightId, lightCenterX, lightCenterY,fill='g'):
+        queueCenterX, queueCenterY = self.drawLightQueue(queue, queueIndex, lightCenterX, lightCenterY,fill,)
+        # if queueIndex == ENV_CONSTANTS["QUEUE_DIR"]["n"] and lightId == ENV_CONSTANTS["LIGHT_POSITIONS"]["SE"]:
         numCars = queue.getNumCarsDriving()
-        self.createCars(numCars, queueCenterX, queueCenterY, queueIndex, lightIndex)
+        self.createCars(numCars, queueCenterX, queueCenterY, queueIndex, lightId)
             # print([car.delay for car in queue.cars])
 
-    def drawLightQueue(self, queue, queueIndex, xCenter, yCenter):
+    def drawLightQueue(self, queue, queueIndex, xCenter, yCenter,fill='g'):
         xOffset, yOffset = self.getQueueOffset(queueIndex)
         x = xCenter + xOffset
         y = yCenter + yOffset
-        self.canvas.create_text(x, y, font=("Arial", 24), text=str(queue.getNumCarsWaiting()))
+
+        self.canvas.create_text(x, y, font=("Arial", 24), text=str(queue.getNumCarsWaiting()),fill=fill)
         return x, y
 
-    def createCars(self, numCars, queueCenterX, queueCenterY, queueIndex, lightIndex):
+    def createCars(self, numCars, queueCenterX, queueCenterY, queueIndex, lightId):
         # if numCars:
-        self.drawCars(numCars, queueCenterX, queueCenterY, queueIndex, lightIndex)
+        self.drawCars(numCars, queueCenterX, queueCenterY, queueIndex, lightId)
     
-    def drawCars(self, numCars, endX, endY, queueIndex, lightIndex):
+    def drawCars(self, numCars, endX, endY, queueIndex, lightId):
         size = 100
         padding = 20
 
@@ -125,18 +163,15 @@ class Visualizer:
 
         text = self.canvas.create_text(xText, yText, font=("Arial", 16), text=str(numCars), fill="blue")
 
-    def getCoordinatesFromLightIndex(self, lightIndex):
-        NW = ENV_CONSTANTS["LIGHT_POSITIONS"]["NW"]
-        NE = ENV_CONSTANTS["LIGHT_POSITIONS"]["NE"]
-        SE = ENV_CONSTANTS["LIGHT_POSITIONS"]["SE"]
-        if lightIndex == NW:
+    def getCoordinatesFromlightId(self, lightId):
+        if lightId == "NW":
             return (0, 0)
-        elif lightIndex == NE:
-            return (0, 1)
-        elif lightIndex == SE:
+        elif lightId == "NE":
+            return (1,0)
+        elif lightId == "SE":
             return (1, 1)
         else: # West
-            return (1, 0)
+            return (0, 1)
     
     def getQueueOffset(self, queueIndex):
         offset = 50

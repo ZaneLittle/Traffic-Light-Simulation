@@ -6,12 +6,12 @@ LIGHT_CONSTANTS = {
         "w": 3
     },
     "TIME_BINS": {
-        "small_upper": 15,    # 0 < small wait <= 2
-        "med_upper": 30      # 2 < medium wait <= 5                       
+        "small_upper": 30,    # 0 < small wait <= 2
+        "med_upper": 50      # 2 < medium wait <= 5                       
     }                        # large wait > 5
 }
 
-NUM_DAYS = 1000
+NUM_DAYS = 300
 EPISODE_LEN = 600 # Number of minutes in a 10 hour day (so morning, rush hour, work day, and then night rush hour)
 NUM_INTERVALS = 5
 
@@ -31,7 +31,7 @@ ENV_CONSTANTS = {
         "SW": 3
     },
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
-    "MAX_CARS": 150,
+    "MAX_CARS": 50,
     "RUSH_HOUR_TIMES":  [(boundaryOne,boundaryTwo-1),(boundaryThree,boundaryFour-1)],
     "TIME_INTERVALS": [(0,boundaryOne-1),(boundaryOne,boundaryTwo-1),(boundaryTwo,boundaryThree-1),(boundaryThree,boundaryFour-1),(boundaryFour,EPISODE_LEN-1)]
     
