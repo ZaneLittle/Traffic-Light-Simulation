@@ -105,7 +105,7 @@ class Agent:
         assert(waitTimes<=0),waitTimes
         greedyNext = self.greedy_action(newState)
         oldVal = self.qVal(previousState)[action]
-        update = self.lr * (waitTimes + self.discount * greedyNext - oldVal)
+        update = oldVal + self.lr * (waitTimes + self.discount * greedyNext - oldVal)
         self.__updateQTable(previousState,action,update)
 
 
@@ -115,4 +115,4 @@ class Agent:
         state = str(state)
         if not state in self.qTable:
             self.qTable[state] = np.zeros(self.numActions)
-        self.qTable[state][action] += value
+        self.qTable[state][action] = value

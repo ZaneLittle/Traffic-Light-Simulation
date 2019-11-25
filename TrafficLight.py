@@ -40,12 +40,12 @@ class TrafficLight:
         def __bin(wait_time):
             # Bin the total wait time
             # Update size of Q table if number of bins changes
-            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["med_upper"]:
-                return 100
-            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_upper"]:
-                return 5
+            if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["large"]["lowerBound"]:
+                return LIGHT_CONSTANTS["TIME_BINS"]["large"]["penalty"]
+            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["medium"]["lowerBound"]:
+                return LIGHT_CONSTANTS["TIME_BINS"]["medium"]["penalty"]
             else:
-                return 0            
+                return LIGHT_CONSTANTS["TIME_BINS"]["small"]["penalty"]
         NS = __bin(self.queues[0].getWaitTimes(time) + self.queues[2].getWaitTimes(time))
         EW = __bin(self.queues[1].getWaitTimes(time) + self.queues[3].getWaitTimes(time))
         return NS, EW

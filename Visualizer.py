@@ -43,7 +43,7 @@ class Visualizer:
                 """
                 self.time = time
                 self.updateFrame(time)
-                tm.sleep(0.001)
+                tm.sleep(0.1)
                 state = self.environment.toState(time)
                 action = self.agent.updateLights(time)
                 waitTimes = self.environment.update(time,routes)
@@ -62,7 +62,7 @@ class Visualizer:
     def updateFrame(self, time):
         self.canvas.delete("all")
         self.updateTrafficLights()
-        self.canvas.create_text(30, 30, font=("Arial", 16), text="Time: {}".format(time), fill="blue")
+        self.canvas.create_text(50, 30, font=("Arial", 16), text="Time: {}".format(time), fill="blue")
 
         self.gui.update()
 
@@ -76,14 +76,14 @@ class Visualizer:
         for queueIndex, queue in enumerate(light.queues):
             howBad = "green"
             if queueIndex in [LIGHT_CONSTANTS["ACTION_DIR"]["n"],LIGHT_CONSTANTS["ACTION_DIR"]["s"]]:
-                if nsTimes == 100:
+                if nsTimes == LIGHT_CONSTANTS["TIME_BINS"]["large"]["penalty"]:
                     howBad = "red"
-                elif nsTimes == 5:
+                elif nsTimes == LIGHT_CONSTANTS["TIME_BINS"]["medium"]["penalty"]:
                     howBad = "orange" 
             else:
-                if ewTimes == 100:
+                if ewTimes == LIGHT_CONSTANTS["TIME_BINS"]["large"]["penalty"]:
                     howBad = "red"
-                elif ewTimes == 5:
+                elif ewTimes == LIGHT_CONSTANTS["TIME_BINS"]["medium"]["penalty"]:
                     howBad = "orange"                      
             self.createLightQueue(queue, queueIndex, lightId, xCenter,yCenter,howBad)
 
