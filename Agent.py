@@ -108,9 +108,6 @@ class Agent:
         # assert(update <= 0),"update: {}, oldVal: {}, greedyNext: {}, reward: {}, wait time delta: {}".format(update,oldVal,greedyNext,reward,waitTimeDelta)
         self.__updateQTable(previousState,action,update)
 
-
-
-
     def __updateQTable(self,state,action,value):
         state = str(state)
         if not state in self.qTable:

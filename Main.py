@@ -22,32 +22,46 @@ def plot(rewardHistory, carsHistory):
     plt.plot(carsHistory)
     plt.xlabel('time')
     plt.ylabel('Number of Cars')
+
     plt.xticks(tickSpacing,labels=["Day {}".format(day+1) for day in range(ENV_CONSTANTS["NUM_DAYS"])],rotation=45)
     plt.show()
 
-def plotDays(rewardHistory,carsHistory):
+def plotDays(rewardHistory,carsHistory, avgDailyWaitTimes):
     _, ax = plt.subplots()
     episodeLength = ENV_CONSTANTS["EPISODE_LENGTH"]
     rewardHistory,carsHistory = np.array(rewardHistory),np.array(carsHistory)
     dailyAverage = np.mean(rewardHistory.reshape(-1, episodeLength), axis=1)
     dailyCars = np.mean(carsHistory.reshape(-1, episodeLength), axis=1)
 
-    plt.subplot(2, 1, 1)
+
+    plt.subplot(3, 1, 1)
+    plt.title('Daily Averages')
     plt.plot(dailyAverage)
-    plt.ylabel('Average Wait Time/Day')
+    plt.ylabel('Wait Time/Day')
     plt.tick_params(
     axis='x',          # changes apply to the x-axis
     which='both',      # both major and minor ticks are affected
     labelbottom=False) # labels along the bottom edge are off
 
-    plt.subplot(2, 1, 2)
-    ymin, ymax = ax.get_ylim()
+    plt.subplot(3, 1, 2)
     plt.plot(dailyCars)
-    plt.xlabel('Day (600 timesteps each)')
-    plt.ylabel('Avg NUmber of Cars')
+    plt.ylabel('Number of Cars')
+
+    plt.subplot(3, 1, 3)
+    plt.plot(avgDailyWaitTimes)
+    plt.ylabel('Travel Time')
    
+    ymin, ymax = ax.get_ylim()
+    plt.xlabel('Day (600 timesteps each)')
     plt.show()
-    
+
+def plotTravelTimes(avgDailyWaitTimes):
+    plt.plot(avgDailyWaitTimes)
+    plt.ylabel('Average Travel Time')
+    plt.xlabel('Day')
+    plt.show()
+
+
 
 def runSimulation(environment,agent,resetOnDay=True):
     routes = environment.generateRoutes()
@@ -58,12 +72,14 @@ def runSimulation(environment,agent,resetOnDay=True):
     stateTracker = set()
     rewardHistory = []
     carsHistory = []
+    avgTravelTimes = [] # average travel times by separated day
     for year in range(ENV_CONSTANTS["NUM_YEARS"]):
         yearHistory = []
         for day in range(ENV_CONSTANTS["NUM_DAYS"]):
             environment = Environment(0)
             agent.environment = environment
             previousWaitTime = 0
+            dayTravels = []
             for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
                 """
                 Steps 
@@ -75,7 +91,8 @@ def runSimulation(environment,agent,resetOnDay=True):
                 """
                 state = environment.toState(time)
                 action = agent.updateLights(time)
-                waitTimes = environment.update(time,routes)
+                waitTimes, travels = environment.update(time,routes)
+                dayTravels += travels
                 newState = environment.toState(time+1)
                 # print(previousWaitTime,waitTimes)
                 agent.updateQTable(state,newState,action,waitTimeDelta=previousWaitTime-waitTimes)
@@ -84,11 +101,14 @@ def runSimulation(environment,agent,resetOnDay=True):
                 yearHistory.append(waitTimes)
                 carsHistory.append(environment.getNumCars())
             rewardHistory += yearHistory
+            dayTravels += environment.getCarWaits(ENV_CONSTANTS["EPISODE_LENGTH"]) # get the rest of the waits in the environment
+            avgTravelTimes.append(sum(dayTravels)/len(dayTravels)) # Add average of the day's travels 
         yearHistory = np.array(yearHistory)
         print("Finished year {},  \tavg cost: {:.4f}".format(year+1,np.mean(yearHistory)))
         percVisited = (len(stateTracker)/agent.numStates)*100
         print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
-    return rewardHistory, carsHistory
+        # print("\t-> travel times: {}".format(avgTravelTimes))
+    return rewardHistory, carsHistory, avgTravelTimes
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -115,7 +135,8 @@ def saveQTable(qTable,name):
 if __name__ == "__main__":
     environment = Environment(0)
     agent = Agent(environment)
-    rewardHistory, carsHistory = runSimulation(environment,agent,True)
+    rewardHistory, carsHistory, avgDailyWaitTimes = runSimulation(environment,agent,True)
+    plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
     saveQTable(agent.qTable,"50YearQTable")
     
 

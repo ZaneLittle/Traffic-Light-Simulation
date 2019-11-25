@@ -15,3 +15,4 @@ class Car:
         self.startTime = startTime
         self.delay = 0
         self.canClear = True
+        self.enteredEnvironment = startTime

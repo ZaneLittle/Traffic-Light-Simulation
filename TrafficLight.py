@@ -65,9 +65,13 @@ class TrafficLight:
         assert(queue.getNumCars() - initLength == 1)
 
     def updateQueues(self, time):
-        ''' Move cars in direction the light is set '''
+        ''' 
+        Move cars in direction the light is set 
+        Returns the list of times each removed car was in the environment
+        '''
         def __subtract(car): car.delay = max(0,car.delay-1)
         queues = []
+        travelTimes = []
         if self.directionIsNorthSouth:
             queues = [self.queues[0], self.queues[2]]
         else:
@@ -90,6 +94,7 @@ class TrafficLight:
                         # If a car is at the north most intersection and wants to continue north,
                         # it exits the city
                         queue.popCar()
+                        travelTimes.append(time - peakedCar.enteredEnvironment)
                         del peakedCar
                     elif not peakedCar.canClear: 
                         # add a delay so that the car doesn't immediately pass through the intersection
@@ -100,6 +105,7 @@ class TrafficLight:
                         car.canClear = False
                         car.delay = car.MAX_DELAY
                         self.pushCarToNextLight(car, nextCarAction, time)
+        return travelTimes
 
     def addNeighbour(self, direction, light):
         """

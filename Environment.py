@@ -79,19 +79,28 @@ class Environment:
 
     def update(self, time, allRoutes):
         self.addAllCars(time, allRoutes)
+        travelTimes = []
         for light in self.lights:
-            light.updateQueues(time)
+            travelTimes += light.updateQueues(time) # concat
         self.currentTime = time
         self.isRushHour = self.__highTraffic(time)
         if self.getNumCars():
-            return self.getCost(time)/self.getNumCars()
-        return 0
+            return self.getCost(time)/self.getNumCars(), travelTimes
+        return 0, travelTimes
 
     def getNumCars(self):
         """
             Returns the total number of cars in the system.
         """
         return sum([light.getNumCars() for light in self.lights])
+
+    def getCarWaits(self, time):
+        waits = []
+        for light in self.lights:
+            for queue in light.queues:
+                for car in queue.cars:
+                    waits.append(time - car.enteredEnvironment)
+        return waits
 
     def toState(self, time):
         """
