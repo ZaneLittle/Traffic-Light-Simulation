@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 def plot(rewardHistory, carsHistory):
     tickSpacing = [ENV_CONSTANTS["EPISODE_LENGTH"]*day for day in range(ENV_CONSTANTS["NUM_DAYS"])]
     plt.subplot(2, 1, 1)
-    rewardHistory = np.array(rewardHistory)*-1
     plt.plot(rewardHistory)
     plt.ylabel('Average Cost')
     plt.xticks(tickSpacing)
@@ -28,13 +27,13 @@ def plotDays(rewardHistory,carsHistory):
     _, ax = plt.subplots()
     episodeLength = ENV_CONSTANTS["EPISODE_LENGTH"]
     rewardHistory,carsHistory = np.array(rewardHistory),np.array(carsHistory)
-    dailyAverage = np.mean(rewardHistory.reshape(-1, episodeLength), axis=1)*-1
+    dailyAverage = np.mean(rewardHistory.reshape(-1, episodeLength), axis=1)
     dailyCars = np.mean(carsHistory.reshape(-1, episodeLength), axis=1)
 
     assert(dailyAverage.shape[0] == ENV_CONSTANTS["NUM_DAYS"] )
     plt.subplot(2, 1, 1)
     plt.plot(dailyAverage)
-    plt.ylabel('Average Cost/Day')
+    plt.ylabel('Average Wait Time/Day')
     plt.tick_params(
     axis='x',          # changes apply to the x-axis
     which='both',      # both major and minor ticks are affected
@@ -43,7 +42,7 @@ def plotDays(rewardHistory,carsHistory):
     plt.subplot(2, 1, 2)
     ymin, ymax = ax.get_ylim()
     plt.plot(dailyCars)
-    plt.xlabel('time')
+    plt.xlabel('Day (600 timesteps each)')
     plt.ylabel('Avg NUmber of Cars')
    
     plt.show()
@@ -59,21 +58,30 @@ def runSimulation(environment,agent,resetOnDay=True):
     carsHistory = []
     for day in range(ENV_CONSTANTS["NUM_DAYS"]):
         dayHistory =[]
-        if resetOnDay: 
-            environment = Environment(0)
-            agent.environment = environment
+        environment = Environment(0)
+        agent.environment = environment
+        previousReward = 0
         for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
-            if not resetOnDay:
-                time = time+(day*ENV_CONSTANTS["EPISODE_LENGTH"]) # keep continuous time going
-            environment.update(time,routes)
-            qInd = agent.stateToQind(environment.toState(time))
-            stateTracker.add(qInd)
-            dayHistory.append(agent.update(time, environment))
+            """
+            Steps 
+                1) Read in state
+                2) make a decision
+                3) observe reward -> environment.update()
+                4) update q table for old state using new reward.
+
+            """
+            state = environment.toState(time)
+            action = agent.updateLights(time)
+            waitTimes = environment.update(time,routes)
+            newState = environment.toState(time+1)
+            agent.updateQTable(state,newState,action,waitTimes)
+            stateTracker.add(str(state))
+            dayHistory.append(waitTimes)
             carsHistory.append(environment.getNumCars())
         rewardHistory += dayHistory
         dayHistory = np.array(dayHistory)
-        print("Finished day {}, avg cost: {}".format(day+1,np.mean(dayHistory)))
-        percVisited = (len(stateTracker)/agent.qTable.shape[0])*100
+        print("Finished day {},  \tavg cost: {:.4f}".format(day+1,np.mean(dayHistory)))
+        percVisited = (len(stateTracker)/agent.numStates)*100
         print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
     return rewardHistory, carsHistory
 
@@ -81,6 +89,10 @@ def runSimulation(environment,agent,resetOnDay=True):
 if __name__ == "__main__":
     environment = Environment(0)
     agent = Agent(environment)
-    rewardHistory, carsHistory = runSimulation(environment,agent,False)
+    rewardHistory, carsHistory = runSimulation(environment,agent,True)
     plotDays(rewardHistory,carsHistory)
+    # plot(rewardHistory,carsHistory)
+    # rewardHistory, carsHistory = runSimulation(environment,agent,True)
+
+
 

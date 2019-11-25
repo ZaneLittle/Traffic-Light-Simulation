@@ -41,11 +41,11 @@ class TrafficLight:
             # Bin the total wait time
             # Update size of Q table if number of bins changes
             if wait_time > LIGHT_CONSTANTS["TIME_BINS"]["med_upper"]:
-                return 2
+                return 100
             elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small_upper"]:
-                return 1
+                return 5
             else:
-                return 0
+                return 0            
         NS = __bin(self.queues[0].getWaitTimes(time) + self.queues[2].getWaitTimes(time))
         EW = __bin(self.queues[1].getWaitTimes(time) + self.queues[3].getWaitTimes(time))
         return NS, EW

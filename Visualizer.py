@@ -31,14 +31,26 @@ class Visualizer:
             dayHistory =[]
             self.environment = Environment(0)
             self.agent.environment = self.environment
+            previousReward = 0
             for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
+                """
+                Steps 
+                    1) Read in state
+                    2) make a decision
+                    3) observe reward -> environment.update()
+                    4) update q table for old state using new reward.
+
+                """
                 self.time = time
                 self.updateFrame(time)
                 tm.sleep(0.001)
-                self.environment.update(time,routes)
                 state = self.environment.toState(time)
+                action = self.agent.updateLights(time)
+                waitTimes = self.environment.update(time,routes)
+                newState = self.environment.toState(time+1)
+                self.agent.updateQTable(state,newState,action,waitTimes)
                 stateTracker.add(str(state))
-                dayHistory.append(self.agent.update(time, self.environment))
+                dayHistory.append(waitTimes)
                 carsHistory.append(self.environment.getNumCars())
             rewardHistory += dayHistory
             dayHistory = np.array(dayHistory)
@@ -47,7 +59,6 @@ class Visualizer:
             print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
         return rewardHistory, carsHistory
            
-
     def updateFrame(self, time):
         self.canvas.delete("all")
         self.updateTrafficLights()
@@ -74,7 +85,7 @@ class Visualizer:
                     howBad = "red"
                 elif ewTimes == 5:
                     howBad = "orange"                      
-            self.createLightQueue(queue, queueIndex, lightId, xCenter, yCenter,fill=howBad)
+            self.createLightQueue(queue, queueIndex, lightId, xCenter,yCenter,howBad)
 
     def drawTrafficLight(self, light, lightId):
         direction = light.directionIsNorthSouth

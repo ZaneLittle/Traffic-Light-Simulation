@@ -79,29 +79,14 @@ class Environment:
             self.addCarToQueue(newCar, time)
 
     def update(self, time, allRoutes):
-        # Add car
-        # For now only add one car so we can see if the environment is working properly
-        # newCar1 = Car([(0, 2), "s", "s"], startTime=time)
-        # newCar2 = Car([(3, 0), "n", "e", "e"], startTime=time)
-        # newCar3 = Car([(1, 1), "w", "s", "s"], startTime=time)
-        # newCar4 = Car([(2, 0), "n", "e", "s", "s"], startTime=time)
-        # if time == 0:
-        #     self.addCarToQueue(newCar1, time)
-        #     self.addCarToQueue(newCar2, time)
-        #     self.addCarToQueue(newCar3, time)
-        #     self.addCarToQueue(newCar4, time)
-        # if time == 5:
-        #     self.addCarToQueue(newCar1, time)
-        #     self.addCarToQueue(newCar2, time)
-        #     self.addCarToQueue(newCar3, time)
-        #     self.addCarToQueue(newCar4, time)
-
-        # Testing route generation
         self.addAllCars(time, allRoutes)
         for light in self.lights:
             light.updateQueues(time)
         self.currentTime = time
         self.isRushHour = self.__highTraffic(time)
+        if self.getNumCars():
+            return self.getCost(time)/self.getNumCars()
+        return 0
 
     def getNumCars(self):
         """
