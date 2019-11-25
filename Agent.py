@@ -26,7 +26,7 @@ class Agent:
         self.numActions = numActions
         self.qTable = np.zeros((self.numStates, self.numActions))
         self.qTable = {}
-        self.lightChangeCost = -0.5
+        self.lightChangeCost = -1
         self.actionMap = self.generateActionMap()
 
         self.policy = [0.5, 0.5, 0.5, 0.5]
@@ -94,18 +94,18 @@ class Agent:
                 self.environment.lights[i].changeLight(time) 
         return actionIndex
 
-    def updateQTable(self,previousState,newState,action,waitTimes):
+    def updateQTable(self,previousState,newState,action,waitTimeDelta):
         newLights = self.actionMap[action]
         oldLights = previousState[:4]
-        waitTimes *= -1
-        assert(waitTimes<=0),waitTimes
+        reward = waitTimeDelta
         for oldDirection,newDirection in zip(oldLights,newLights):
             if oldDirection != newDirection:
-                waitTimes+=self.lightChangeCost
-        assert(waitTimes<=0),waitTimes
+                r = reward
+                reward+=self.lightChangeCost
         greedyNext = self.greedy_action(newState)
         oldVal = self.qVal(previousState)[action]
-        update = oldVal + self.lr * (waitTimes + self.discount * greedyNext - oldVal)
+        update = oldVal + self.lr * (reward + self.discount * greedyNext - oldVal)
+        # assert(update <= 0),"update: {}, oldVal: {}, greedyNext: {}, reward: {}, wait time delta: {}".format(update,oldVal,greedyNext,reward,waitTimeDelta)
         self.__updateQTable(previousState,action,update)
 
 

@@ -18,7 +18,6 @@ class Environment:
         self.currentTime = time
         self.lights = self.__init_lights()
         self.MAX_CARS = ENV_CONSTANTS["MAX_CARS"]
-        self.lightChangeCost = -1
         self.isRushHour = self.__highTraffic(time)
 
     def __init_lights(self):

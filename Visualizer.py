@@ -43,7 +43,7 @@ class Visualizer:
                 """
                 self.time = time
                 self.updateFrame(time)
-                tm.sleep(0.1)
+                tm.sleep(0.001)
                 state = self.environment.toState(time)
                 action = self.agent.updateLights(time)
                 waitTimes = self.environment.update(time,routes)
