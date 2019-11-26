@@ -8,8 +8,8 @@ LIGHT_CONSTANTS = {
     "TIME_BINS": {
         "zero": {"penalty": 0},
         "small": {"lowerBound": 0, "penalty": 2},
-        "medium": {"lowerBound": lambda totalWait: min(totalWait/8, 10), "penalty": 25},
-        "large": {"lowerBound": lambda totalWait: min(totalWait/4, 20), "penalty": 100},
+        "medium": {"lowerBound": lambda totalWait: max(totalWait/8, 10), "penalty": 25},
+        "large": {"lowerBound": lambda totalWait: max(totalWait/3, 30), "penalty": 100},
     },  # large wait > 5
 }
 
@@ -23,12 +23,12 @@ boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
 FILES = {
     "SAVE_FILE": "qTables/loopy.json",
-    "LOAD_FILE": "qTables/temp.json"
+    "LOAD_FILE": "qTables/loopy.json"
 }
 
 ENV_CONSTANTS = {
-    "NUM_YEARS": 20,
-    "NUM_DAYS": 365,
+    "NUM_YEARS": 1,
+    "NUM_DAYS": 30,
     "EPISODE_LENGTH": EPISODE_LEN,
     "MAX_CARS": 20,
     "ROUTE": "loopy",
