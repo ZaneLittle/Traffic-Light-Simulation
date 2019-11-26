@@ -138,14 +138,14 @@ if __name__ == "__main__":
     environment = Environment(0)
     saveFileName = FILES["SAVE_FILE"]
     if input("Save qTable to file {}? (yes/no) ".format(saveFileName))[0].lower() != "y":
-        print("Aborting simulation. Change save file in config.py")
-        exit
+        print("\nAborting simulation. Change save-file in config.py\n")
+        exit()
     saveFileFunction = lambda: saveQTable(agent.qTable,saveFileName)
     continueTraining = False
-    if input("Continue training from file {}? (yes/no) ".format(FILES["LOAD_FILE"]))[0].lower() == "y":
+    if input("\nContinue training from file {}? (yes/no) ".format(FILES["LOAD_FILE"]))[0].lower() == "y":
         continueTraining = True
     else:
-        print("Training from scratch")
+        print("\nTraining from scratch\n")
     agent = Agent(environment, continueTraining=continueTraining)
     rewardHistory, carsHistory, avgDailyWaitTimes = runSimulation(environment,agent,True, saveFile=saveFileFunction)
     assert(len(rewardHistory) == ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"]),"{},{}".format(len(rewardHistory),ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"])
