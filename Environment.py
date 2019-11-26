@@ -139,7 +139,7 @@ class Environment:
 
 
     def getCost(self, time):
-        return sum(self.toState(time)[4:-1])
+        return sum(self.getCarWaits(time))
 
     def generateRoutes(self):
         """

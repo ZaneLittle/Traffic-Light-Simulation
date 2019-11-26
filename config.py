@@ -32,7 +32,7 @@ ENV_CONSTANTS = {
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS": {"NW": 0, "NE": 1, "SE": 2, "SW": 3},
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
-    "MAX_CARS": 50,
+    "MAX_CARS": 20,
     "RUSH_HOUR_TIMES": [
         (boundaryOne, boundaryTwo - 1),
         (boundaryThree, boundaryFour - 1),
