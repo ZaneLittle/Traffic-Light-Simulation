@@ -32,9 +32,9 @@ class Visualizer:
         stateTracker = set()
         rewardHistory = []
         carsHistory = []
-        if train:
-            print("Discarding QTable and Training")
-            self.qTable = {}
+        # if train:
+        #     print("Discarding QTable and Training")
+        #     self.qTable = {}
         previousWaitTime = 0
         for day in range(ENV_CONSTANTS["NUM_DAYS"]):
             dayHistory =[]
@@ -48,19 +48,19 @@ class Visualizer:
 
                 """
                 self.time = time + (day*ENV_CONSTANTS["EPISODE_LENGTH"])
-                self.updateFrame(time)
+                self.updateFrame("Day: {}, time: {}".format(day,time))
                 tm.sleep(0.1)
-                state = self.environment.toState(time)
+                state = self.environment.toState(self.time)
                 if train:
-                    action = self.agent.updateLights(time)
-                    waitTimes, travels = self.environment.update(time,routes)
-                    newState = self.environment.toState(time+1)
+                    action = self.agent.updateLights(self.time)
+                    waitTimes, travels = self.environment.update(self.time,routes)
+                    newState = self.environment.toState(self.time+1)
                     self.agent.updateQTable(state,newState,action,waitTimeDelta=previousWaitTime-waitTimes)
                     previousWaitTime = waitTimes
                 else:
-                    state = self.environment.toState(time)
-                    action = self.agent.updateLights(time,greedy=True)
-                    waitTimes, _ = self.environment.update(time,routes)
+                    state = self.environment.toState(self.time)
+                    action = self.agent.updateLights(self.time,greedy=True)
+                    waitTimes, _ = self.environment.update(self.time,routes)
                 stateTracker.add(str(state))
                 dayHistory.append(waitTimes)
                 carsHistory.append(self.environment.getNumCars())
@@ -71,10 +71,10 @@ class Visualizer:
             print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
         return rewardHistory, carsHistory
            
-    def updateFrame(self, time):
+    def updateFrame(self, dateStr):
         self.canvas.delete("all")
         self.updateTrafficLights()
-        self.canvas.create_text(50, 30, font=("Arial", 16), text="Time: {}".format(time), fill="blue")
+        self.canvas.create_text(80, 30, font=("Arial", 16), text=dateStr, fill="blue")
 
         self.gui.update()
 
@@ -234,5 +234,5 @@ class Visualizer:
 
 if __name__ == "__main__":
     gui = Visualizer()
-    rewardHistory, carsHistory = gui.runSimulation()
+    rewardHistory, carsHistory = gui.runSimulation(train=True)
     plot(rewardHistory,carsHistory)

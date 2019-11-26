@@ -104,7 +104,7 @@ def runSimulation(environment,agent,resetOnDay=True):
                 yearHistory.append(waitTimes)
                 carsHistory.append(environment.getNumCars())
             rewardHistory += yearHistory
-            dayTravels += environment.getCarWaits(ENV_CONSTANTS["EPISODE_LENGTH"]) # get the rest of the waits in the environment
+            dayTravels += environment.getCarTravelDuration(ENV_CONSTANTS["EPISODE_LENGTH"]) # get the rest of the waits in the environment
             avgTravelTimes.append(sum(dayTravels)/len(dayTravels)) # Add average of the day's travels 
         yearHistory = np.array(yearHistory)
         print("Finished year {},  \tavg cost: {:.4f}".format(year+1,np.mean(yearHistory)))

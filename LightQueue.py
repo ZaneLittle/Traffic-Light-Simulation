@@ -53,5 +53,7 @@ class LightQueue:
         # starting it's "wait" in the queue. This is like saying the car isn't
         # stationary if it's delay is >0 and we don't count it towards the agent's
         # cost.
-        return sum([time - car.startTime for car in self.carsWaiting()])
+        waitTimes = [time - car.startTime for car in self.carsWaiting()]
+        assert(sum(waitTimes) >= 0),"time: {}, sum: {}, car starts: {}, delays: {}".format(time,waitTimes,[car.startTime for car in self.carsWaiting()],[car.delay for car in self.carsWaiting()])
+        return sum(waitTimes)
 

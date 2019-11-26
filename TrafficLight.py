@@ -46,8 +46,9 @@ class TrafficLight:
                 return LIGHT_CONSTANTS["TIME_BINS"]["medium"]["penalty"]
             else:
                 return LIGHT_CONSTANTS["TIME_BINS"]["small"]["penalty"]
-        NS = __bin(self.queues[0].getWaitTimes(time) + self.queues[2].getWaitTimes(time))
-        EW = __bin(self.queues[1].getWaitTimes(time) + self.queues[3].getWaitTimes(time))
+        n,s,e,w = LIGHT_CONSTANTS["ACTION_DIR"]["n"],LIGHT_CONSTANTS["ACTION_DIR"]["s"],LIGHT_CONSTANTS["ACTION_DIR"]["e"],LIGHT_CONSTANTS["ACTION_DIR"]["w"]
+        NS = __bin(self.queues[n].getWaitTimes(time) + self.queues[s].getWaitTimes(time))
+        EW = __bin(self.queues[e].getWaitTimes(time) + self.queues[w].getWaitTimes(time))
         return NS, EW
 
     def pushCarToNextLight(self, car, action, time):

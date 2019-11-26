@@ -95,6 +95,20 @@ class Environment:
         return sum([light.getNumCars() for light in self.lights])
 
     def getCarWaits(self, time):
+        """
+            Returns the total wait time for that time step
+        """
+        waits = []
+        for light in self.lights:
+            for queue in light.queues:
+                for car in queue.cars:
+                    waits.append(time - car.startTime)
+        return waits
+
+    def getCarTravelDuration(self, time):
+        """
+            Returns the total wait time for that time step
+        """
         waits = []
         for light in self.lights:
             for queue in light.queues:
@@ -235,7 +249,7 @@ class Environment:
                 newRoute.append(queue[1])  # Add on action
             newRoute.append(getExitAction(route[-1]))
             allRoutes[idx] = newRoute
-
+            
         return allRoutes
 
     def __str__(self):
