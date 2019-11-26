@@ -72,8 +72,8 @@ def runSimulation(environment,agent,resetOnDay=True):
     #                       ~   START SIMULATION   ~                         #
     #========================================================================#
     stateTracker = set()
-    rewardHistory = []
     carsHistory = []
+    waitTimeList = []
     avgTravelTimes = [] # average travel times by separated day
     print("Starting simulation. Num epochs {}".format(ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]))
     for year in range(ENV_CONSTANTS["NUM_YEARS"]):
@@ -95,15 +95,14 @@ def runSimulation(environment,agent,resetOnDay=True):
                 state = environment.toState(time)
                 action = agent.updateLights(time)
                 waitTimes, travels = environment.update(time,routes)
+                waitTimeList.append(waitTimes)
                 dayTravels += travels
                 newState = environment.toState(time+1)
-                # print(previousWaitTime,waitTimes)
                 agent.updateQTable(state,newState,action,waitTimeDelta=previousWaitTime-waitTimes)
                 previousWaitTime = waitTimes
                 stateTracker.add(str(state))
                 yearHistory.append(waitTimes)
                 carsHistory.append(environment.getNumCars())
-            rewardHistory += yearHistory
             dayTravels += environment.getCarTravelDuration(ENV_CONSTANTS["EPISODE_LENGTH"]) # get the rest of the waits in the environment
             avgTravelTimes.append(sum(dayTravels)/len(dayTravels)) # Add average of the day's travels 
         yearHistory = np.array(yearHistory)
@@ -111,7 +110,7 @@ def runSimulation(environment,agent,resetOnDay=True):
         percVisited = (len(stateTracker)/agent.numStates)*100
         print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
         # print("\t-> travel times: {}".format(avgTravelTimes))
-    return rewardHistory, carsHistory, avgTravelTimes
+    return waitTimeList, carsHistory, avgTravelTimes
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -139,9 +138,11 @@ if __name__ == "__main__":
     environment = Environment(0)
     agent = Agent(environment)
     rewardHistory, carsHistory, avgDailyWaitTimes = runSimulation(environment,agent,True)
+    assert(len(rewardHistory) == ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"]),"{},{}".format(len(rewardHistory),ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"])
     plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
     plotCulminativeCO2(culminativeCO2(avgDailyWaitTimes))
-    # saveQTable(agent.qTable,"50YearQTable")
+    title = "{}YearQTable".format(ENV_CONSTANTS["NUM_YEARS"])
+    # saveQTable(agent.qTable,title)
     
 
 
