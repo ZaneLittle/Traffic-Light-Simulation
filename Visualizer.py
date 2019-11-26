@@ -23,7 +23,7 @@ class Visualizer:
         with open('qTables/50YearQTable.json') as qTable:
             self.agent.qTable = json.load(qTable)
 
-    def runSimulation(self):
+    def runSimulation(self,train=False):
         routes = self.environment.generateRoutes()
 
         #========================================================================#
@@ -32,6 +32,10 @@ class Visualizer:
         stateTracker = set()
         rewardHistory = []
         carsHistory = []
+        if train:
+            print("Discarding QTable and Training")
+            self.qTable = {}
+        previousWaitTime = 0
         for day in range(ENV_CONSTANTS["NUM_DAYS"]):
             dayHistory =[]
             for time in range(ENV_CONSTANTS["EPISODE_LENGTH"]):
@@ -45,11 +49,18 @@ class Visualizer:
                 """
                 self.time = time + (day*ENV_CONSTANTS["EPISODE_LENGTH"])
                 self.updateFrame(time)
-                tm.sleep(0.3)
+                tm.sleep(0.1)
                 state = self.environment.toState(time)
-                action = self.agent.updateLights(time,greedy=True)
-                waitTimes = self.environment.update(time,routes)
-
+                if train:
+                    action = self.agent.updateLights(time)
+                    waitTimes, travels = self.environment.update(time,routes)
+                    newState = self.environment.toState(time+1)
+                    self.agent.updateQTable(state,newState,action,waitTimeDelta=previousWaitTime-waitTimes)
+                    previousWaitTime = waitTimes
+                else:
+                    state = self.environment.toState(time)
+                    action = self.agent.updateLights(time,greedy=True)
+                    waitTimes, _ = self.environment.update(time,routes)
                 stateTracker.add(str(state))
                 dayHistory.append(waitTimes)
                 carsHistory.append(self.environment.getNumCars())
