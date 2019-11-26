@@ -8,7 +8,7 @@ from Main import Main
 
 class Visualizer:
 
-    def __init__(self):
+    def __init__(self,route=None):
         self.time = 0
         self.createCanvas()
         self.gui.update()
@@ -18,7 +18,7 @@ class Visualizer:
         self.stateIsNew = False
         self.main = Main(visualizerCallback=self.updateFrame)
         self.environment = self.main.environment
-        self.main.startSimulation()
+        self.main.startSimulation(route)
 
         # with open(FILES["LOAD_FILE"]) as qTable:
             # self.agent.qTable = json.load(qTable)
@@ -200,4 +200,7 @@ class Visualizer:
         return self.canvas
 
 if __name__ == "__main__":
-    gui = Visualizer()
+    route = None                #
+    # route = "loopy"            #   IF YOU WANT A DIFFERENT ROUTE CHOOSE ONE OF THESES
+    # route = "simpleLoopy"       #
+    gui = Visualizer(route)

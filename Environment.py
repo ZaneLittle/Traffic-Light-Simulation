@@ -141,12 +141,35 @@ class Environment:
     def getCost(self, time):
         return sum(self.toState(time)[4:])
 
-    def generateRoutes(self,loopy=False):
+    def __simpleLoopy(self):
+        loop = []
+        for i in range(ENV_CONSTANTS["EPISODE_LENGTH"]//4):
+            loop+=["s","e","n","w"]
+        loop+="w"
+        loopyCar = [(0,2)]+loop
+        return [loopyCar]
+
+    def __loopy(self):
+        loop = []
+        for i in range(30):
+            loop+=["s","e","n","w"]
+        loop+="w"
+        loopyCar = [(0,2)]+loop
+        return [loopyCar]
+
+    def generateRoutes(self,route=None):
         """
             Returns a list of all possible routes a car can take
             Each route is a list where the first element is a tuple (start light, queue direction) and
             subsequent elements are optimal actions for the car
         """
+        if route == "loopy":
+            print("Each car does a loop 30 times and exits")
+            return self.__loopy()
+        elif route == "simpleLoopy":
+            print("Each car loops forever")
+
+            return self.__simpleLoopy()
 
        #====================== Helper functions here ======================
         def BFS(g, startPoint, endPoint):
@@ -190,13 +213,7 @@ class Environment:
             else:
                 return "w"
 
-        if loopy:
-            loop = []
-            for i in range(3):
-                loop+=["s","e","n","w"]
-            loop+="w"
-            loopyCar = [(0,2)]+loop
-            return [loopyCar]
+        
 
         # Construct graph with the value of each vertex being a list of its neighbours
         # Vertices 1, 2, 3, etc. are start/exit points beginning from the NW light north point
