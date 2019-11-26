@@ -90,19 +90,15 @@ class TrafficLight:
                 if peakedCar.delay > 0:
                     peakedCar.delay = max(0,peakedCar.delay-1)
                 else:
-                    if peakedCar.canClear and self.neighbours[direction] is None:
+                    if self.neighbours[direction] is None:
                         # If a car is at the north most intersection and wants to continue north,
                         # it exits the city
                         queue.popCar()
                         travelTimes.append(time - peakedCar.enteredEnvironment)
                         del peakedCar
-                    elif not peakedCar.canClear: 
-                        # add a delay so that the car doesn't immediately pass through the intersection
-                        peakedCar.canClear = not peakedCar.canClear
                     else:
                         car = queue.popCar()
                         car.route.pop(0)
-                        car.canClear = False
                         car.delay = car.MAX_DELAY
                         self.pushCarToNextLight(car, nextCarAction, time)
         return travelTimes

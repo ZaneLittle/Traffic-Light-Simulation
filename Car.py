@@ -15,5 +15,4 @@ class Car:
         self.route = route
         self.startTime = startTime
         self.delay = CAR_CONSTS["MAX_DELAY"]
-        self.canClear = True
         self.enteredEnvironment = startTime
