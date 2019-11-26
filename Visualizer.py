@@ -23,7 +23,7 @@ class Visualizer:
         with open(FILES["LOAD_FILE"]) as qTable:
             self.agent.qTable = json.load(qTable)
 
-    def runSimulation(self,train=False):
+    def runSimulation(self,greedy=False):
         routes = self.environment.generateRoutes()
 
         #========================================================================#
@@ -32,7 +32,7 @@ class Visualizer:
         stateTracker = set()
         rewardHistory = []
         carsHistory = []
-        # if train:
+        # if greedy:
         #     print("Discarding QTable and Training")
         #     self.qTable = {}
         previousWaitTime = 0
@@ -51,7 +51,7 @@ class Visualizer:
                 self.updateFrame("Day: {}, time: {}".format(day,time))
                 tm.sleep(0.1)
                 state = self.environment.toState(self.time)
-                if train:
+                if greedy:
                     action = self.agent.updateLights(self.time)
                     waitTimes, travels = self.environment.update(self.time,routes)
                     newState = self.environment.toState(self.time+1)
@@ -61,6 +61,8 @@ class Visualizer:
                     state = self.environment.toState(self.time)
                     action = self.agent.updateLights(self.time,greedy=True)
                     waitTimes, _ = self.environment.update(self.time,routes)
+                    newState = self.environment.toState(self.time+1)
+                    self.agent.updateQTable(state,newState,action,waitTimeDelta=previousWaitTime-waitTimes)
                 stateTracker.add(str(state))
                 dayHistory.append(waitTimes)
                 carsHistory.append(self.environment.getNumCars())
@@ -234,5 +236,5 @@ class Visualizer:
 
 if __name__ == "__main__":
     gui = Visualizer()
-    rewardHistory, carsHistory = gui.runSimulation(train=True)
+    rewardHistory, carsHistory = gui.runSimulation(greedy=False)
     plot(rewardHistory,carsHistory)

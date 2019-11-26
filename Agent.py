@@ -34,6 +34,8 @@ class Agent:
         self.actionMap = self.generateActionMap()
 
         self.policy = [0.5, 0.5, 0.5, 0.5]
+
+        print("Initial qTable length: {}".format(len(self.qTable)))
      
       
     def generateActionMap(self):
