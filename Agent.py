@@ -23,7 +23,7 @@ class Agent:
         self.epsilon = epsilon
         self.lr = lr
         self.environment = environment
-        self.numStates = (2**lights)*(discreteCosts**(2*lights))*numDayTime # Number of possible lights * traffic wait times * times of day
+        self.numStates = (2**lights)*(discreteCosts**(2*lights))#*numDayTime Number of possible lights * traffic wait times * times of day
         self.numActions = numActions
         self.qTable = {}
         self.lightChangeCost = -1

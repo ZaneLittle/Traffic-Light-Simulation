@@ -20,7 +20,7 @@ class Visualizer:
 
         self.agent = Agent(self.environment)
         self.agent.qTable = {}
-        with open('qTables/50YearQTable.json') as qTable:
+        with open('qTables/10YearQTable.json') as qTable:
             self.agent.qTable = json.load(qTable)
 
     def runSimulation(self,train=False):

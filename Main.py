@@ -142,7 +142,7 @@ if __name__ == "__main__":
     plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
     plotCulminativeCO2(culminativeCO2(avgDailyWaitTimes))
     title = "{}YearQTable".format(ENV_CONSTANTS["NUM_YEARS"])
-    # saveQTable(agent.qTable,title)
+    saveQTable(agent.qTable,title)
     
 
 

@@ -129,12 +129,12 @@ class Environment:
         for light in self.lights:
             NSTotalTime, EWTotalTime = light.getWaitTimes(time, sum(self.getCarWaits(time)))
             state += [NSTotalTime, EWTotalTime]
-        timeOfDay = 0
-        for ind,timeTup in enumerate(ENV_CONSTANTS["TIME_INTERVALS"]):
-            if timeTup[0] <= time <= timeTup[1]:
-                timeOfDay = ind
-                break
-        state.append(timeOfDay)
+        # timeOfDay = 0
+        # for ind,timeTup in enumerate(ENV_CONSTANTS["TIME_INTERVALS"]):
+        #     if timeTup[0] <= time <= timeTup[1]:
+        #         timeOfDay = ind
+        #         break
+        # state.append(timeOfDay)
         return state
 
 
