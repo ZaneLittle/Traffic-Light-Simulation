@@ -139,9 +139,9 @@ class Environment:
 
 
     def getCost(self, time):
-        return sum(self.toState(time)[4:-1])
+        return sum(self.toState(time)[4:])
 
-    def generateRoutes(self):
+    def generateRoutes(self,loopy=False):
         """
             Returns a list of all possible routes a car can take
             Each route is a list where the first element is a tuple (start light, queue direction) and
@@ -189,6 +189,14 @@ class Environment:
                 return "s"
             else:
                 return "w"
+
+        if loopy:
+            loop = []
+            for i in range(3):
+                loop+=["s","e","n","w"]
+            loop+="w"
+            loopyCar = [(0,2)]+loop
+            return [loopyCar]
 
         # Construct graph with the value of each vertex being a list of its neighbours
         # Vertices 1, 2, 3, etc. are start/exit points beginning from the NW light north point

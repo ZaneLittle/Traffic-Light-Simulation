@@ -6,9 +6,10 @@ LIGHT_CONSTANTS = {
         "w": 3,
     },
     "TIME_BINS": {
-        "small": {"penalty": 2},
-        "medium": {"lowerBound": lambda totalWait: totalWait/8, "penalty": 25},
-        "large": {"lowerBound": lambda totalWait: totalWait/4, "penalty": 100},
+        "zero": {"penalty": 0},
+        "small": {"lowerBound": 0, "penalty": 2},
+        "medium": {"lowerBound": lambda totalWait: min(totalWait/8, 10), "penalty": 25},
+        "large": {"lowerBound": lambda totalWait: min(totalWait/4, 20), "penalty": 100},
     },  # large wait > 5
 }
 
@@ -21,18 +22,18 @@ boundaryThree = (EPISODE_LEN // NUM_INTERVALS) * 3
 boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
 FILES = {
-    "SAVE_FILE": "qTables/50YearQTable.json",
-    "LOAD_FILE": "qTables/50YearQTable.json"
+    "SAVE_FILE": "qTables/temp.json",
+    "LOAD_FILE": "qTables/temp.json"
 }
 
 ENV_CONSTANTS = {
-    "NUM_YEARS": 10,
-    "NUM_DAYS": 365,
+    "NUM_YEARS": 20,
+    "NUM_DAYS": 50,
     "EPISODE_LENGTH": EPISODE_LEN,
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS": {"NW": 0, "NE": 1, "SE": 2, "SW": 3},
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
-    "MAX_CARS": 50,
+    "MAX_CARS": 10,
     "RUSH_HOUR_TIMES": [
         (boundaryOne, boundaryTwo - 1),
         (boundaryThree, boundaryFour - 1),

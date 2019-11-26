@@ -107,10 +107,11 @@ class Agent:
                 self.environment.lights[i].changeLight(time) 
         return actionIndex
 
-    def updateQTable(self,previousState,newState,action,waitTimeDelta):
+    def updateQTable(self,previousState,newState,action,waitTime):
+        stateIsNew = str(newState) not in self.qTable
         newLights = self.actionMap[action]
         oldLights = previousState[:4]
-        reward = waitTimeDelta
+        reward = waitTime*-1
         for oldDirection,newDirection in zip(oldLights,newLights):
             if oldDirection != newDirection:
                 r = reward
@@ -120,9 +121,11 @@ class Agent:
         update = oldVal + self.lr * (reward + self.discount * greedyNext - oldVal)
         # assert(update <= 0),"update: {}, oldVal: {}, greedyNext: {}, reward: {}, wait time delta: {}".format(update,oldVal,greedyNext,reward,waitTimeDelta)
         self.__updateQTable(previousState,action,update)
+        return stateIsNew
 
     def __updateQTable(self,state,action,value):
         state = str(state)
-        if not state in self.qTable:
+        # print("stateIsNew: {}, {}".format(stateIsNew, self.qTable[state]))
+        if state not in self.qTable:
             self.qTable[state] = np.zeros(self.numActions)
         self.qTable[state][action] = value

@@ -44,12 +44,16 @@ class TrafficLight:
                 return LIGHT_CONSTANTS["TIME_BINS"]["large"]["penalty"]
             elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["medium"]["lowerBound"](totalWaitTime):
                 return LIGHT_CONSTANTS["TIME_BINS"]["medium"]["penalty"]
-            else:
+            elif wait_time > LIGHT_CONSTANTS["TIME_BINS"]["small"]["lowerBound"]:
                 return LIGHT_CONSTANTS["TIME_BINS"]["small"]["penalty"]
+            else:
+                return LIGHT_CONSTANTS["TIME_BINS"]["zero"]["penalty"]
         n,s,e,w = LIGHT_CONSTANTS["ACTION_DIR"]["n"],LIGHT_CONSTANTS["ACTION_DIR"]["s"],LIGHT_CONSTANTS["ACTION_DIR"]["e"],LIGHT_CONSTANTS["ACTION_DIR"]["w"]
         NS = __bin(self.queues[n].getWaitTimes(time) + self.queues[s].getWaitTimes(time))
         EW = __bin(self.queues[e].getWaitTimes(time) + self.queues[w].getWaitTimes(time))
-        return NS, EW
+        if self.directionIsNorthSouth: # only give the cost if that light is red. If it's green the car will get through eventualy.
+            return LIGHT_CONSTANTS["TIME_BINS"]["zero"]["penalty"], EW
+        return NS,LIGHT_CONSTANTS["TIME_BINS"]["zero"]["penalty"]
 
     def pushCarToNextLight(self, car, action, time):
         """
