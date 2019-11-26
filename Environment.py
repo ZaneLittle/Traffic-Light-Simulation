@@ -151,7 +151,7 @@ class Environment:
 
     def __loopy(self):
         loop = []
-        for i in range(30):
+        for i in range(10):
             loop+=["s","e","n","w"]
         loop+="w"
         loopyCar = [(0,2)]+loop
@@ -164,11 +164,10 @@ class Environment:
             subsequent elements are optimal actions for the car
         """
         if route == "loopy":
-            print("Each car does a loop 30 times and exits")
+            print("Loopy: Each car does a loop 30 times and exits")
             return self.__loopy()
         elif route == "simpleLoopy":
-            print("Each car loops forever")
-
+            print("simpleLoopy: Each car loops forever")
             return self.__simpleLoopy()
 
        #====================== Helper functions here ======================

@@ -200,7 +200,8 @@ class Visualizer:
         return self.canvas
 
 if __name__ == "__main__":
-    route = None                #
-    # route = "loopy"            #   IF YOU WANT A DIFFERENT ROUTE CHOOSE ONE OF THESES
-    # route = "simpleLoopy"       #
+    #route = None               #
+    #route = "loopy"            #   IF YOU WANT A DIFFERENT ROUTE CHOOSE ONE OF THESES
+    # route = "simpleLoopy"     #
+    route  = ENV_CONSTANTS["ROUTE"]
     gui = Visualizer(route)

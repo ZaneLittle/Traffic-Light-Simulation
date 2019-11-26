@@ -12,7 +12,7 @@ class Main():
         self.environment = Environment(0)
         self.visualizerCallback = visualizerCallback
     
-    def startSimulation(self):
+    def startSimulation(self,route=None):
         saveFileName = FILES["SAVE_FILE"]
         if input("Save qTable to SAVE_FILE: {}? (yes/no) ".format(saveFileName))[0].lower() != "y":
             print("Aborting simulation. Change SAVE_FILE in config.py")
@@ -26,7 +26,7 @@ class Main():
         
         self.agent = Agent(self.environment, continueTraining=continueTraining)
         saveFileFunction = lambda: self.saveQTable(self.agent.qTable,saveFileName)
-        rewardHistory, carsHistory, avgDailyWaitTimes = self.runSimulation(self.agent,True, saveFile=saveFileFunction)
+        rewardHistory, carsHistory, avgDailyWaitTimes = self.runSimulation(self.agent,True, saveFile=saveFileFunction,route=route)
         assert(len(rewardHistory) == ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"]),"{},{}".format(len(rewardHistory),ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"])
         self.plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
         self.plotCulminativeCO2(culminativeCO2(avgDailyWaitTimes))
@@ -97,8 +97,8 @@ class Main():
     def culminativeCO2(self, travelTimes):
         return np.cumsum([x * CAR_CONSTS["CO2_PER_TICK"] for x in travelTimes])
 
-    def runSimulation(self, agent,resetOnDay=True, loadFile=None, saveFile=None):
-        routes = self.environment.generateRoutes(loopy=True)
+    def runSimulation(self, agent,resetOnDay=True, loadFile=None,route=None, saveFile=None):
+        routes = self.environment.generateRoutes(route=route)
 
         #========================================================================#
         #                       ~   START SIMULATION   ~                         #
@@ -173,8 +173,12 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 if __name__ == "__main__":
+    # route = None                #
+    # route = "loopy"             #   IF YOU WANT A DIFFERENT ROUTE CHOOSE ONE OF THESES
+    # route = "simpleLoopy"       #
+    route  = ENV_CONSTANTS["ROUTE"]
     main = Main()
-    main.startSimulation()
+    main.startSimulation(route=route)
     
 
 

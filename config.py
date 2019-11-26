@@ -22,18 +22,19 @@ boundaryThree = (EPISODE_LEN // NUM_INTERVALS) * 3
 boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
 FILES = {
-    "SAVE_FILE": "qTables/temp.json",
+    "SAVE_FILE": "qTables/loopy.json",
     "LOAD_FILE": "qTables/temp.json"
 }
 
 ENV_CONSTANTS = {
     "NUM_YEARS": 20,
-    "NUM_DAYS": 50,
+    "NUM_DAYS": 365,
     "EPISODE_LENGTH": EPISODE_LEN,
+    "MAX_CARS": 20,
+    "ROUTE": "loopy",
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS": {"NW": 0, "NE": 1, "SE": 2, "SW": 3},
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
-    "MAX_CARS": 20,
     "RUSH_HOUR_TIMES": [
         (boundaryOne, boundaryTwo - 1),
         (boundaryThree, boundaryFour - 1),
