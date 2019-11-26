@@ -1,7 +1,7 @@
 from tkinter import *
 import time as tm
 from Main import plot,plotDays
-from config import ENV_CONSTANTS,LIGHT_CONSTANTS
+from config import ENV_CONSTANTS,LIGHT_CONSTANTS,FILES
 from Agent import Agent
 import json
 import numpy as np
@@ -20,7 +20,7 @@ class Visualizer:
 
         self.agent = Agent(self.environment)
         self.agent.qTable = {}
-        with open('qTables/10YearQTable.json') as qTable:
+        with open(FILES["LOAD_FILE"]) as qTable:
             self.agent.qTable = json.load(qTable)
 
     def runSimulation(self,train=False):

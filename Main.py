@@ -1,7 +1,7 @@
 from Environment import Environment
 from Agent import Agent
 import numpy as np
-from config import ENV_CONSTANTS, CAR_CONSTS
+from config import ENV_CONSTANTS, CAR_CONSTS, FILES
 import json
 import os
 import math
@@ -65,7 +65,7 @@ def plotCulminativeCO2(culminativeCO2):
 def culminativeCO2(travelTimes):
     return np.cumsum([x * CAR_CONSTS["CO2_PER_TICK"] for x in travelTimes])
 
-def runSimulation(environment,agent,resetOnDay=True):
+def runSimulation(environment,agent,resetOnDay=True, loadFile=None, saveFile=None):
     routes = environment.generateRoutes()
 
     #========================================================================#
@@ -107,6 +107,7 @@ def runSimulation(environment,agent,resetOnDay=True):
             avgTravelTimes.append(sum(dayTravels)/len(dayTravels)) # Add average of the day's travels 
         yearHistory = np.array(yearHistory)
         print("Finished year {},  \tavg cost: {:.4f}".format(year+1,np.mean(yearHistory)))
+        saveFile()
         percVisited = (len(stateTracker)/agent.numStates)*100
         print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
         # print("\t-> travel times: {}".format(avgTravelTimes))
@@ -118,8 +119,7 @@ class NumpyEncoder(json.JSONEncoder):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 
-def saveQTable(qTable,name):
-    filePath = "qTables/{}.json".format(name)
+def saveQTable(qTable,filePath):
     print("model => {}".format(filePath))
     if not os.path.exists(os.path.dirname(filePath)):
         try:
@@ -136,13 +136,22 @@ def saveQTable(qTable,name):
 
 if __name__ == "__main__":
     environment = Environment(0)
-    agent = Agent(environment)
-    rewardHistory, carsHistory, avgDailyWaitTimes = runSimulation(environment,agent,True)
+    saveFileName = FILES["SAVE_FILE"]
+    if input("Save qTable to file {}? (yes/no) ".format(saveFileName))[0].lower() != "y":
+        print("Aborting simulation. Change save file in config.py")
+        exit
+    saveFileFunction = lambda: saveQTable(agent.qTable,saveFileName)
+    continueTraining = False
+    if input("Continue training from file {}? (yes/no) ".format(FILES["LOAD_FILE"]))[0].lower() == "y":
+        continueTraining = True
+    else:
+        print("Training from scratch")
+    agent = Agent(environment, continueTraining=continueTraining)
+    rewardHistory, carsHistory, avgDailyWaitTimes = runSimulation(environment,agent,True, saveFile=saveFileFunction)
     assert(len(rewardHistory) == ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"]),"{},{}".format(len(rewardHistory),ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"])
     plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
     plotCulminativeCO2(culminativeCO2(avgDailyWaitTimes))
-    title = "{}YearQTable".format(ENV_CONSTANTS["NUM_YEARS"])
-    saveQTable(agent.qTable,title)
+    saveFileFunction()
     
 
 

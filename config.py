@@ -20,6 +20,11 @@ boundaryTwo = (EPISODE_LEN // NUM_INTERVALS) * 2
 boundaryThree = (EPISODE_LEN // NUM_INTERVALS) * 3
 boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
+FILES = {
+    "SAVE_FILE": "qTables/50YearQTable.json",
+    "LOAD_FILE": "qTables/50YearQTable.json"
+}
+
 ENV_CONSTANTS = {
     "NUM_YEARS": 10,
     "NUM_DAYS": 365,

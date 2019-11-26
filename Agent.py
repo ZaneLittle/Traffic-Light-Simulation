@@ -2,11 +2,11 @@ import random
 import json
 import numpy as np
 from itertools import permutations
-from config import STATE_COSTANTS
+from config import STATE_COSTANTS, FILES
 
 class Agent:
 
-    def __init__(self, environment, discount=0.5, epsilon=0.01, lr=0.9 ,lights=4, discreteCosts=3, numActions=16, numDayTime=5):
+    def __init__(self, environment, discount=0.5, epsilon=0.01, lr=0.9 ,lights=4, discreteCosts=3, numActions=16, numDayTime=5, continueTraining=False):
         ''' 
         init as equiprobable
         the policy for each light is represented as an index of the policy array
@@ -23,9 +23,13 @@ class Agent:
         self.epsilon = epsilon
         self.lr = lr
         self.environment = environment
-        self.numStates = (2**lights)*(discreteCosts**(2*lights))#*numDayTime Number of possible lights * traffic wait times * times of day
+        self.numStates = (2**lights)*(discreteCosts**(2*lights)) # *numDayTime Number of possible lights * traffic wait times * times of day
         self.numActions = numActions
         self.qTable = {}
+        if continueTraining:
+            with open(FILES["LOAD_FILE"]) as qTable:
+                self.qTable = json.load(qTable)
+            print("Loaded qTable from {}".format(FILES["LOAD_FILE"]))
         self.lightChangeCost = -1
         self.actionMap = self.generateActionMap()
 
