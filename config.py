@@ -22,16 +22,16 @@ boundaryThree = (EPISODE_LEN // NUM_INTERVALS) * 3
 boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
 FILES = {
-    "SAVE_FILE": "qTables/loopy.json",
-    "LOAD_FILE": "qTables/loopy.json"
+    "SAVE_FILE": "qTables/softmax_sloopy.json",
+    "LOAD_FILE": "qTables/sloopy.json"
 }
 
 ENV_CONSTANTS = {
-    "NUM_YEARS": 1,
-    "NUM_DAYS": 30,
+    "NUM_YEARS": 7,
+    "NUM_DAYS": 365,
     "EPISODE_LENGTH": EPISODE_LEN,
     "MAX_CARS": 20,
-    "ROUTE": "loopy",
+    "ROUTE": "loopy", # route = {normal,loopy,simpleLoopy}
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS": {"NW": 0, "NE": 1, "SE": 2, "SW": 3},
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
@@ -60,11 +60,13 @@ def stateEntity(quantity, numStates):
     return {"quantity": quantity, "numStates": numStates}
 
 
-STATE_COSTANTS = {
+STATE_CONSTANTS = {
     "LIGHTS": stateEntity(4, 2),
     "QUEUES": stateEntity(
         8, 1 + len(LIGHT_CONSTANTS["TIME_BINS"])
     ),  # Add one to the length here because the length is the number of boundaries, which is one more than the number of bins
     "TIME_OF_DAY": stateEntity(1, NUM_INTERVALS),
+    "POLICY": "softmax", # policy = {softmax,egreedy}
+
 }
 

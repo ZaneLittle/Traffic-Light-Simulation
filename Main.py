@@ -2,6 +2,7 @@ from Environment import Environment
 from Agent import Agent
 import numpy as np
 from config import ENV_CONSTANTS, CAR_CONSTS, FILES
+import copy
 import json
 import os
 import math
@@ -29,81 +30,21 @@ class Main():
         rewardHistory, carsHistory, avgDailyWaitTimes = self.runSimulation(self.agent,True, saveFile=saveFileFunction,route=route)
         assert(len(rewardHistory) == ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"]),"{},{}".format(len(rewardHistory),ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"])
         self.plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
-        self.plotCulminativeCO2(culminativeCO2(avgDailyWaitTimes))
+        # self.plot(rewardHistory,carsHistory)
+        self.plotCulminativeCO2(self.culminativeCO2(avgDailyWaitTimes))
         
         saveFileFunction()
-
-    def approxRollingAvg(self, avg, newCost):
-        N = 30
-        avg -= avg / N;
-        avg += newCost / N;
-        return avg;
-
-    def plot(self, rewardHistory, carsHistory):
-        tickSpacing = [ENV_CONSTANTS["EPISODE_LENGTH"]*day for day in range(ENV_CONSTANTS["NUM_DAYS"])]
-        plt.subplot(2, 1, 1)
-        plt.plot(rewardHistory)
-        plt.ylabel('Average Cost')
-        plt.xticks(tickSpacing)
-        plt.tick_params(
-        axis='x',          # changes apply to the x-axis
-        which='both',      # both major and minor ticks are affected
-        labelbottom=False) # labels along the bottom edge are off
-
-        plt.subplot(2, 1, 2)
-        plt.plot(carsHistory)
-        plt.xlabel('time')
-        plt.ylabel('Number of Cars')
-
-        plt.xticks(tickSpacing,labels=["Day {}".format(day+1) for day in range(ENV_CONSTANTS["NUM_DAYS"])],rotation=45)
-        plt.show()
-    
-    def plotDays(self, rewardHistory,carsHistory, avgDailyWaitTimes):
-        _, ax = plt.subplots()
-        episodeLength = ENV_CONSTANTS["EPISODE_LENGTH"]
-        rewardHistory,carsHistory = np.array(rewardHistory),np.array(carsHistory)
-        dailyAverage = np.mean(rewardHistory.reshape(-1, episodeLength), axis=1)
-        dailyCars = np.mean(carsHistory.reshape(-1, episodeLength), axis=1)
-
-
-        plt.subplot(3, 1, 1)
-        plt.title('Daily Averages')
-        plt.plot(dailyAverage)
-        plt.ylabel('Wait Time/Day')
-        plt.tick_params(
-        axis='x',          # changes apply to the x-axis
-        which='both',      # both major and minor ticks are affected
-        labelbottom=False) # labels along the bottom edge are off
-
-        plt.subplot(3, 1, 2)
-        plt.plot(dailyCars)
-        plt.ylabel('Number of Cars')
-
-        plt.subplot(3, 1, 3)
-        plt.plot(avgDailyWaitTimes)
-        plt.ylabel('Travel Time')
-    
-        ymin, ymax = ax.get_ylim()
-        plt.xlabel('Day (600 timesteps each)')
-        plt.show()
-
-    def plotCulminativeCO2(self, culminativeCO2):
-        plt.plot(culminativeCO2)
-        plt.title('Culminative CO2 (kg)')
-        plt.ylabel('CO2 Emitted (kg)')
-        plt.xlabel('Day')
-        plt.show()
 
     def culminativeCO2(self, travelTimes):
         return np.cumsum([x * CAR_CONSTS["CO2_PER_TICK"] for x in travelTimes])
 
-    def runSimulation(self, agent,resetOnDay=True, loadFile=None,route=None, saveFile=None):
+    def runSimulation(self, agent,resetOnDay=True, loadFile=None,route=None, saveFile=None,naive=False):
         routes = self.environment.generateRoutes(route=route)
 
         #========================================================================#
         #                       ~   START SIMULATION   ~                         #
         #========================================================================#
-        stateTracker = set()
+        stateTracker = set(self.agent.qTable.keys())
         
         carsHistory = []
         waitTimeList = []
@@ -140,19 +81,19 @@ class Main():
                     
                     avg = self.approxRollingAvg(avg, waitTimes)
                     if self.visualizerCallback is not None:
-                        self.visualizerCallback(self.environment, time, stateIsNew, avg, self.environment.isRushHour)
+                        self.visualizerCallback(self.environment, time, False, avg, self.environment.isRushHour)
                 dayTravels += self.environment.getCarTravelDuration(ENV_CONSTANTS["EPISODE_LENGTH"]) # get the rest of the waits in the environment
                 avgTravelTimes.append(sum(dayTravels)/len(dayTravels)) # Add average of the day's travels 
             yearHistory = np.array(yearHistory)
             print("Finished year {},  \tavg cost: {:.4f}".format(year+1,np.mean(yearHistory)))
-            saveFile()
             percVisited = (len(stateTracker)/agent.numStates)*100
             print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
+            saveFile()
             # print("\t-> travel times: {}".format(avgTravelTimes))
         return waitTimeList, carsHistory, avgTravelTimes
 
     def saveQTable(self, qTable,filePath):
-        print("model => {}".format(filePath))
+        print("\t-> model saved to {}".format(filePath))
         if not os.path.exists(os.path.dirname(filePath)):
             try:
                 os.makedirs(os.path.dirname(filePath))
@@ -164,6 +105,70 @@ class Main():
         file1 = open(filePath,"w")#write mode 
         file1.write(test) 
         file1.close() 
+
+    def approxRollingAvg(self, avg, newCost):
+        N = 30
+        avg -= avg / N
+        avg += newCost / N
+        return avg
+
+    def plot(self, rewardHistory, carsHistory):
+        tickSpacing = [ENV_CONSTANTS["EPISODE_LENGTH"]*day for day in range(ENV_CONSTANTS["NUM_DAYS"])]
+        plt.subplot(2, 1, 1)
+        plt.plot(rewardHistory)
+        plt.ylabel('Average Cost')
+        plt.xticks(tickSpacing)
+        plt.tick_params(
+        axis='x',          # changes apply to the x-axis
+        which='both',      # both major and minor ticks are affected
+        labelbottom=False) # labels along the bottom edge are off
+
+        plt.subplot(2, 1, 2)
+        plt.plot(carsHistory)
+        plt.xlabel('time')
+        plt.ylabel('Number of Cars')
+        plt.xticks(tickSpacing,rotation=45)
+        # plt.xticks(tickSpacing,labels=["Day {}".format(day+1) for day in range(ENV_CONSTANTS["NUM_DAYS"])],rotation=45)
+        plt.show()
+    
+    def plotDays(self, rewardHistory,carsHistory, avgDailyWaitTimes):
+        _, ax = plt.subplots()
+        episodeLength = ENV_CONSTANTS["EPISODE_LENGTH"]
+        rewardHistory,carsHistory = np.array(rewardHistory),np.array(carsHistory)
+        dailyAverage = np.mean(rewardHistory.reshape(-1, episodeLength), axis=1)
+        dailyCars = np.mean(carsHistory.reshape(-1, episodeLength), axis=1)
+
+        s = plt.subplot(3, 1, 1)
+        s.set_ylim([0, 5])
+        plt.title('Daily Averages (Car\'s Loop 10 Times and Exit)')
+        plt.plot(dailyAverage)
+        plt.ylabel('Wait Time/Day')
+        plt.tick_params(
+        axis='x',          # changes apply to the x-axis
+        which='both',      # both major and minor ticks are affected
+        labelbottom=False) # labels along the bottom edge are off
+
+        s2 = plt.subplot(3, 1, 2)
+        s2.set_ylim([0, ENV_CONSTANTS["MAX_CARS"]+2])
+        plt.plot(dailyCars)
+        plt.ylabel('Number of Cars')
+
+        s3 = plt.subplot(3, 1, 3)
+        s3.set_ylim([0,max(avgDailyWaitTimes)*1.5])
+        plt.plot(avgDailyWaitTimes)
+        plt.ylabel('Travel Time')
+    
+        ymin, ymax = ax.get_ylim()
+        plt.xlabel('Day (600 timesteps each)')
+        plt.show()
+
+    def plotCulminativeCO2(self, culminativeCO2):
+        plt.plot(culminativeCO2)
+        plt.title('Culminative CO2 (kg)')
+        plt.ylabel('CO2 Emitted (kg)')
+        plt.xlabel('Day')
+        plt.show()
+
 
 
 class NumpyEncoder(json.JSONEncoder):

@@ -2,7 +2,7 @@ import random
 import json
 import numpy as np
 from itertools import permutations
-from config import STATE_COSTANTS, FILES
+from config import STATE_CONSTANTS, FILES
 
 class Agent:
 
@@ -66,6 +66,14 @@ class Agent:
             self.qTable[state] = np.zeros(self.numActions)
             return self.qTable[state]
 
+    def softmax(self,state):
+        """Compute policy using softmax values for each sets of scores in x."""
+        policy = np.zeros(self.numActions)
+        actions = self.qVal(state)
+        e_x = np.exp(actions - np.max(actions))
+        policy = e_x / e_x.sum(axis=0)
+        return np.random.choice(np.arange(len(policy)), p=policy)   
+
     def eGreedy(self, state):
         ''' 
             Return the e-greedy action for a given state
@@ -80,6 +88,7 @@ class Agent:
             policy = np.ones(self.numActions) * (self.epsilon / self.numActions)
             bestAction = np.argmax(actions)
             policy[bestAction] += 1.0 - self.epsilon
+        policy = self.softmax(actions)
 
         return np.random.choice(np.arange(len(policy)), p=policy)    
 
@@ -98,7 +107,12 @@ class Agent:
             returns the "column" in the qtable that we updated
         """
         state = self.environment.toState(time)
-        actionIndex = self.eGreedy(state)
+        actionIndex = None
+        if STATE_CONSTANTS["POLICY"] == "softmax": 
+            actionIndex = self.softmax(state)
+        elif STATE_CONSTANTS["POLICY"] == "egreedy":
+            actionIndex = self.eGreedy(state)
+
         if greedy:
             actionIndex, _ = self.greedyAction(state)
         action = self.actionMap[actionIndex]
