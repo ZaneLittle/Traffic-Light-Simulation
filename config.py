@@ -22,16 +22,17 @@ boundaryThree = (EPISODE_LEN // NUM_INTERVALS) * 3
 boundaryFour = (EPISODE_LEN // NUM_INTERVALS) * 4
 
 FILES = {
-    "SAVE_FILE": "qTables/softmax_sloopy.json",
-    "LOAD_FILE": "qTables/sloopy.json"
+    "SAVE_FILE": "qTables/egreedy_normal.json",
+    "LOAD_FILE": "qTables/egreedy_normal.json"
 }
 
 ENV_CONSTANTS = {
-    "NUM_YEARS": 7,
-    "NUM_DAYS": 365,
+    # For normal route use 7*365 to train
+    "NUM_YEARS": 15,
+    "NUM_DAYS": 10,
     "EPISODE_LENGTH": EPISODE_LEN,
     "MAX_CARS": 20,
-    "ROUTE": "loopy", # route = {normal,loopy,simpleLoopy}
+    "ROUTE": "normal", # route = {normal,loopy,simpleLoopy}
     "NUM_INTERVALS": NUM_INTERVALS,
     "LIGHT_POSITIONS": {"NW": 0, "NE": 1, "SE": 2, "SW": 3},
     "QUEUE_DIR": LIGHT_CONSTANTS["ACTION_DIR"],
@@ -53,7 +54,6 @@ CAR_CONSTS = {
     "CO2_PER_TICK": 0.208 # kg - based on average speed of 50km/h and average CO2 output of 250 g/km
 }
 
-
 # Used to determine the size of the state by considering each variable that makes up the state
 # Parameterize construction of dictionaries
 def stateEntity(quantity, numStates):
@@ -66,7 +66,6 @@ STATE_CONSTANTS = {
         8, 1 + len(LIGHT_CONSTANTS["TIME_BINS"])
     ),  # Add one to the length here because the length is the number of boundaries, which is one more than the number of bins
     "TIME_OF_DAY": stateEntity(1, NUM_INTERVALS),
-    "POLICY": "softmax", # policy = {softmax,egreedy}
-
+    "POLICY": "egreedy", # policy = {softmax,egreedy}
 }
 

@@ -32,12 +32,8 @@ class Agent:
             print("Loaded qTable from {}".format(FILES["LOAD_FILE"]))
         self.lightChangeCost = -1
         self.actionMap = self.generateActionMap()
-
-        self.policy = [0.5, 0.5, 0.5, 0.5]
-
         print("Initial qTable length: {}".format(len(self.qTable)))
      
-      
     def generateActionMap(self):
         lst = [0,0,0,0]
         actionMap = []
@@ -88,7 +84,6 @@ class Agent:
             policy = np.ones(self.numActions) * (self.epsilon / self.numActions)
             bestAction = np.argmax(actions)
             policy[bestAction] += 1.0 - self.epsilon
-        policy = self.softmax(actions)
 
         return np.random.choice(np.arange(len(policy)), p=policy)    
 

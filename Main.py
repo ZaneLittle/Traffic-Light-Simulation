@@ -1,12 +1,12 @@
 from Environment import Environment
 from Agent import Agent
+from Graphing import * 
 import numpy as np
 from config import ENV_CONSTANTS, CAR_CONSTS, FILES
 import copy
 import json
 import os
 import math
-import matplotlib.pyplot as plt
 
 class Main():
     def __init__(self, visualizerCallback=None):
@@ -27,19 +27,21 @@ class Main():
         
         self.agent = Agent(self.environment, continueTraining=continueTraining)
         saveFileFunction = lambda: self.saveQTable(self.agent.qTable,saveFileName)
-        rewardHistory, carsHistory, avgDailyWaitTimes = self.runSimulation(self.agent,True, saveFile=saveFileFunction,route=route)
+        rewardHistory, carsHistory, avgTravelTimes = self.runSimulation(self.agent,True, saveFile=saveFileFunction)
         assert(len(rewardHistory) == ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"]),"{},{}".format(len(rewardHistory),ENV_CONSTANTS["NUM_YEARS"]*ENV_CONSTANTS["NUM_DAYS"]*ENV_CONSTANTS["EPISODE_LENGTH"])
-        self.plotDays(rewardHistory, carsHistory, avgDailyWaitTimes)
-        # self.plot(rewardHistory,carsHistory)
-        self.plotCulminativeCO2(self.culminativeCO2(avgDailyWaitTimes))
-        
-        saveFileFunction()
+        # plot(rewardHistory,carsHistory)
+        # plotDays(rewardHistory, carsHistory, avgTravelTimes)
+        # plotCulminativeCO2(avgTravelTimes)
+
+        naiveRewards, naiveCarsHistory, naiveTravel = self.runSimulation(Agent(Environment(0)),True, saveFile=saveFileFunction,learn=False)
+        plotCulminativeCO2(trainedTravelTimes=avgTravelTimes,naiveTravelTimes=naiveTravel)
+        dualDailyPlot(rewardHistory,naiveRewards,carsHistory,naiveCarsHistory,avgTravelTimes,naiveTravel)
 
     def culminativeCO2(self, travelTimes):
         return np.cumsum([x * CAR_CONSTS["CO2_PER_TICK"] for x in travelTimes])
 
-    def runSimulation(self, agent,resetOnDay=True, loadFile=None,route=None, saveFile=None,naive=False):
-        routes = self.environment.generateRoutes(route=route)
+    def runSimulation(self, agent,resetOnDay=True, loadFile=None, saveFile=None,naive=False,learn=True):
+        routes = self.environment.generateRoutes()
 
         #========================================================================#
         #                       ~   START SIMULATION   ~                         #
@@ -74,7 +76,7 @@ class Main():
                     waitTimeList.append(waitTimes)
                     dayTravels += travels
                     newState = self.environment.toState(time+1)
-                    stateIsNew = agent.updateQTable(state,newState,action,waitTime=waitTimes)
+                    if learn: _ = agent.updateQTable(state,newState,action,waitTime=waitTimes)
                     stateTracker.add(str(state))
                     yearHistory.append(waitTimes)
                     carsHistory.append(self.environment.getNumCars())
@@ -88,7 +90,7 @@ class Main():
             print("Finished year {},  \tavg cost: {:.4f}".format(year+1,np.mean(yearHistory)))
             percVisited = (len(stateTracker)/agent.numStates)*100
             print("\t-> states visisted: {}, % visited: {:.4f}%".format(len(stateTracker),percVisited))
-            saveFile()
+            if learn: saveFile()
             # print("\t-> travel times: {}".format(avgTravelTimes))
         return waitTimeList, carsHistory, avgTravelTimes
 
@@ -112,62 +114,7 @@ class Main():
         avg += newCost / N
         return avg
 
-    def plot(self, rewardHistory, carsHistory):
-        tickSpacing = [ENV_CONSTANTS["EPISODE_LENGTH"]*day for day in range(ENV_CONSTANTS["NUM_DAYS"])]
-        plt.subplot(2, 1, 1)
-        plt.plot(rewardHistory)
-        plt.ylabel('Average Cost')
-        plt.xticks(tickSpacing)
-        plt.tick_params(
-        axis='x',          # changes apply to the x-axis
-        which='both',      # both major and minor ticks are affected
-        labelbottom=False) # labels along the bottom edge are off
-
-        plt.subplot(2, 1, 2)
-        plt.plot(carsHistory)
-        plt.xlabel('time')
-        plt.ylabel('Number of Cars')
-        plt.xticks(tickSpacing,rotation=45)
-        # plt.xticks(tickSpacing,labels=["Day {}".format(day+1) for day in range(ENV_CONSTANTS["NUM_DAYS"])],rotation=45)
-        plt.show()
     
-    def plotDays(self, rewardHistory,carsHistory, avgDailyWaitTimes):
-        _, ax = plt.subplots()
-        episodeLength = ENV_CONSTANTS["EPISODE_LENGTH"]
-        rewardHistory,carsHistory = np.array(rewardHistory),np.array(carsHistory)
-        dailyAverage = np.mean(rewardHistory.reshape(-1, episodeLength), axis=1)
-        dailyCars = np.mean(carsHistory.reshape(-1, episodeLength), axis=1)
-
-        s = plt.subplot(3, 1, 1)
-        s.set_ylim([0, 5])
-        plt.title('Daily Averages (Car\'s Loop 10 Times and Exit)')
-        plt.plot(dailyAverage)
-        plt.ylabel('Wait Time/Day')
-        plt.tick_params(
-        axis='x',          # changes apply to the x-axis
-        which='both',      # both major and minor ticks are affected
-        labelbottom=False) # labels along the bottom edge are off
-
-        s2 = plt.subplot(3, 1, 2)
-        s2.set_ylim([0, ENV_CONSTANTS["MAX_CARS"]+2])
-        plt.plot(dailyCars)
-        plt.ylabel('Number of Cars')
-
-        s3 = plt.subplot(3, 1, 3)
-        s3.set_ylim([0,max(avgDailyWaitTimes)*1.5])
-        plt.plot(avgDailyWaitTimes)
-        plt.ylabel('Travel Time')
-    
-        ymin, ymax = ax.get_ylim()
-        plt.xlabel('Day (600 timesteps each)')
-        plt.show()
-
-    def plotCulminativeCO2(self, culminativeCO2):
-        plt.plot(culminativeCO2)
-        plt.title('Culminative CO2 (kg)')
-        plt.ylabel('CO2 Emitted (kg)')
-        plt.xlabel('Day')
-        plt.show()
 
 
 
@@ -178,12 +125,8 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 if __name__ == "__main__":
-    # route = None                #
-    # route = "loopy"             #   IF YOU WANT A DIFFERENT ROUTE CHOOSE ONE OF THESES
-    # route = "simpleLoopy"       #
-    route  = ENV_CONSTANTS["ROUTE"]
     main = Main()
-    main.startSimulation(route=route)
+    main.startSimulation()
     
 
 

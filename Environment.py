@@ -157,12 +157,13 @@ class Environment:
         loopyCar = [(0,2)]+loop
         return [loopyCar]
 
-    def generateRoutes(self,route=None):
+    def generateRoutes(self):
         """
             Returns a list of all possible routes a car can take
             Each route is a list where the first element is a tuple (start light, queue direction) and
             subsequent elements are optimal actions for the car
         """
+        route  = ENV_CONSTANTS["ROUTE"]
         if route == "loopy":
             print("Loopy: Each car does a loop 30 times and exits")
             return self.__loopy()
