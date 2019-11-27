@@ -28,7 +28,8 @@ FILES = {
 
 ENV_CONSTANTS = {
     # For normal route use 7*365 to train
-    "NUM_YEARS": 15,
+    # for loop route use 15*10
+    "NUM_YEARS": 1,
     "NUM_DAYS": 10,
     "EPISODE_LENGTH": EPISODE_LEN,
     "MAX_CARS": 20,
