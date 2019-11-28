@@ -30,7 +30,6 @@ class Visualizer:
         self.canvas.delete("all")
         self.updateTrafficLights()
         self.createLabels(stateIsNew, avgCost, isRushHour)
-
         self.gui.update()
 
     def createLabels(self, stateIsNew, avgCost, isRushHour):
