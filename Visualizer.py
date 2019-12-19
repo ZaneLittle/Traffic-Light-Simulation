@@ -24,7 +24,7 @@ class Visualizer:
             # self.agent.qTable = json.load(qTable)
            
     def updateFrame(self, newEnvironment, time, stateIsNew, avgCost, isRushHour):
-        tm.sleep(0.1)
+        tm.sleep(0.5)
         self.environment = newEnvironment
         self.time = time
         self.canvas.delete("all")
